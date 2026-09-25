@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>เมนูโปรดและประวัติ — กินอะไรดี</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body data-page="history">
+
+  <div class="app-shell">
+    <aside class="app-sidebar" id="app-sidebar"></aside>
+    <div class="app-sidebar-overlay" id="app-sidebar-overlay"></div>
+
+    <div class="mobile-topbar">
+      <button class="mobile-topbar-toggle" aria-label="เปิดเมนู">☰</button>
+      <a href="dashboard.html" class="brand"><span class="brand-mark">🍲</span> กินอะไรดี</a>
+    </div>
+
+    <main class="app-main">
+      <div class="app-main-inner">
+        <h1 style="margin-bottom:6px">เมนูโปรดและประวัติการให้คะแนน</h1>
+        <p style="margin-bottom:24px">ข้อมูลเหล่านี้ถูกใช้เพื่อปรับคำแนะนำเมนูให้เข้ากับคุณมากขึ้นในครั้งถัดไป</p>
+        <div id="results-list" class="result-list"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/recommend-engine.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/guard.js"></script>
+  <script src="js/history.js"></script>
+</body>
+</html>

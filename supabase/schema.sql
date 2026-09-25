@@ -1,0 +1,249 @@
+-- =========================================================
+-- schema.sql
+-- โครงสร้างฐานข้อมูลของระบบแนะนำเมนูอาหาร (รองรับ role: member / admin)
+--
+-- วิธีใช้: เปิดโปรเจกต์ Supabase -> เมนู SQL Editor -> New query
+-- วางไฟล์นี้ทั้งหมดแล้วกด Run (รันซ้ำได้ปลอดภัย จะล้างตารางเก่าก่อนสร้างใหม่)
+-- จากนั้นรัน seed.sql แล้วรัน make-admin.sql เพื่อตั้งแอดมินคนแรก
+--
+-- หมายเหตุ: ถ้าเคยเจอ error ทำนอง "column menus.id does not exist"
+-- แปลว่ามีตารางชื่อซ้ำที่โครงสร้างคอลัมน์ไม่ตรงกันอยู่ก่อนแล้ว (เช่นเคย
+-- สร้างผ่าน Table Editor ไว้ก่อน) สคริปต์นี้แก้ปัญหาด้วยการลบของเก่าทิ้ง
+-- ก่อนสร้างใหม่ทั้งหมดให้ตรงกับที่แอปต้องการ
+-- =========================================================
+
+drop table if exists public.favorites cascade;
+drop table if exists public.profiles cascade;
+drop table if exists public.menus cascade;
+drop table if exists public.ingredients cascade;
+drop table if exists public.allergens cascade;
+drop function if exists public.handle_new_user() cascade;
+drop function if exists public.is_admin(uuid) cascade;
+drop function if exists public.prevent_role_escalation() cascade;
+
+-- ---------------------------------------------------------
+-- 1) menus: ข้อมูลเมนูอาหาร (อ่านได้สาธารณะ แก้ไขได้เฉพาะแอดมิน)
+-- ---------------------------------------------------------
+create table if not exists public.menus (
+  id int primary key,
+  name text not null,
+  ingredients jsonb not null default '[]'::jsonb,  -- [{ "raw": "...", "name": "..." }, ...]
+  steps jsonb not null default '[]'::jsonb          -- ["ขั้นตอนที่ 1", "ขั้นตอนที่ 2", ...]
+);
+
+alter table public.menus enable row level security;
+
+drop policy if exists "menus_public_read" on public.menus;
+create policy "menus_public_read"
+  on public.menus for select
+  using (true);
+
+-- ---------------------------------------------------------
+-- 2) ingredients: รายการวัตถุดิบสำหรับ autocomplete (อ่านได้สาธารณะ แก้ไขได้เฉพาะแอดมิน)
+-- ---------------------------------------------------------
+create table if not exists public.ingredients (
+  id bigserial primary key,
+  name text not null,
+  category text
+);
+
+alter table public.ingredients enable row level security;
+
+drop policy if exists "ingredients_public_read" on public.ingredients;
+create policy "ingredients_public_read"
+  on public.ingredients for select
+  using (true);
+
+-- ---------------------------------------------------------
+-- 3) allergens: ตัวเลือกอาการแพ้/โรคประจำตัว + คำสำคัญที่ใช้กรองเมนู
+--    (อ่านได้สาธารณะ แก้ไขได้เฉพาะแอดมิน)
+-- ---------------------------------------------------------
+create table if not exists public.allergens (
+  id text primary key,        -- เช่น 'milk', 'egg', 'nuts', 'seafood', 'wheat'
+  label text not null,        -- ป้ายข้อความที่แสดงผล เช่น 'แพ้นมวัว'
+  icon text not null,         -- อิโมจิไอคอนหน้าป้าย
+  keywords text[] not null default '{}',  -- คำที่ใช้จับคู่กับชื่อวัตถุดิบในเมนู
+  sort_order int not null default 0
+);
+
+alter table public.allergens enable row level security;
+
+drop policy if exists "allergens_public_read" on public.allergens;
+create policy "allergens_public_read"
+  on public.allergens for select
+  using (true);
+
+-- ---------------------------------------------------------
+-- 4) profiles: โปรไฟล์สุขภาพของสมาชิก (1 แถวต่อ 1 บัญชีผู้ใช้) + role
+-- ---------------------------------------------------------
+create table if not exists public.profiles (
+  id uuid primary key references auth.users (id) on delete cascade,
+  email text,
+  name text,
+  age int,
+  weight_kg numeric,
+  height_cm numeric,
+  health_conditions text[] not null default '{}',
+  role text not null default 'member' check (role in ('member', 'admin')),
+  created_at timestamptz not null default now()
+);
+
+alter table public.profiles enable row level security;
+
+-- ฟังก์ชันเช็คว่าผู้ใช้ปัจจุบันเป็นแอดมินหรือไม่ ใช้ security definer เพื่อ
+-- ข้าม RLS ตอนอ่าน profiles ของตัวเอง (กันปัญหา policy อ้างอิงตัวเองวนลูป)
+create or replace function public.is_admin(uid uuid default auth.uid())
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select coalesce((select role = 'admin' from public.profiles where id = uid), false);
+$$;
+
+drop policy if exists "profiles_select_own" on public.profiles;
+create policy "profiles_select_own"
+  on public.profiles for select
+  using (auth.uid() = id);
+
+drop policy if exists "profiles_select_admin" on public.profiles;
+create policy "profiles_select_admin"
+  on public.profiles for select
+  using (public.is_admin());
+
+drop policy if exists "profiles_update_own" on public.profiles;
+create policy "profiles_update_own"
+  on public.profiles for update
+  using (auth.uid() = id);
+
+drop policy if exists "profiles_update_admin" on public.profiles;
+create policy "profiles_update_admin"
+  on public.profiles for update
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop policy if exists "profiles_insert_own" on public.profiles;
+create policy "profiles_insert_own"
+  on public.profiles for insert
+  with check (auth.uid() = id);
+
+-- สร้างแถว profiles ให้อัตโนมัติทันทีที่มีผู้ใช้สมัครใหม่ใน auth.users
+-- โดยดึงชื่อ/อายุ/น้ำหนัก/ส่วนสูง/อาการแพ้ มาจาก user metadata ที่ส่งมาตอน signUp()
+-- (วิธีนี้กันปัญหา RLS ตอนยังไม่มี session ทันทีหลังสมัคร เช่น กรณีเปิดยืนยันอีเมล)
+-- role จะเป็น 'member' เสมอตอนสมัคร — เลื่อนเป็นแอดมินทีหลังผ่าน make-admin.sql เท่านั้น
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  insert into public.profiles (id, email, name, age, weight_kg, height_cm, health_conditions)
+  values (
+    new.id,
+    new.email,
+    new.raw_user_meta_data ->> 'name',
+    nullif(new.raw_user_meta_data ->> 'age', '')::int,
+    nullif(new.raw_user_meta_data ->> 'weight_kg', '')::numeric,
+    nullif(new.raw_user_meta_data ->> 'height_cm', '')::numeric,
+    coalesce(
+      (select array_agg(value) from jsonb_array_elements_text(
+        coalesce(new.raw_user_meta_data -> 'health_conditions', '[]'::jsonb)
+      )),
+      '{}'
+    )
+  )
+  on conflict (id) do nothing;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
+
+-- กันไม่ให้ผู้ใช้ทั่วไปเปลี่ยน role ของตัวเองได้ แม้จะยิง request ตรงไป
+-- Supabase REST API เอง (ข้าม UI) เพราะ policy "profiles_update_own" อนุญาต
+-- ให้แก้ไขแถวของตัวเองได้ทุกคอลัมน์ ยกเว้น role ซึ่ง trigger นี้เช็คซ้ำอีกชั้น
+-- อนุญาตให้เปลี่ยน role ได้เฉพาะตอนที่ผู้เรียกเป็นแอดมินอยู่แล้วเท่านั้น
+create or replace function public.prevent_role_escalation()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  -- auth.uid() เป็น NULL เมื่อรันตรงจาก SQL Editor / migration (ไม่มี session
+  -- ของผู้ใช้) ถือว่าเป็นทางที่เชื่อถือได้ (เช่น make-admin.sql) จึงข้ามการเช็ค
+  -- แต่ถ้ามาจาก request ของผู้ใช้ที่ล็อกอินอยู่ (auth.uid() ไม่ใช่ NULL) ต้อง
+  -- เป็นแอดมินเท่านั้นถึงจะเปลี่ยน role ของแถวไหนก็ได้ (รวมถึงของตัวเอง)
+  if new.role is distinct from old.role
+     and auth.uid() is not null
+     and not public.is_admin() then
+    raise exception 'ไม่มีสิทธิ์เปลี่ยนบทบาทผู้ใช้ (role)';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_profiles_role_guard on public.profiles;
+create trigger on_profiles_role_guard
+  before update on public.profiles
+  for each row execute procedure public.prevent_role_escalation();
+
+-- ---------------------------------------------------------
+-- 5) favorites: เมนูโปรด + คะแนนที่สมาชิกให้ (ใช้ทำ personalization ด้วย)
+-- ---------------------------------------------------------
+create table if not exists public.favorites (
+  id bigserial primary key,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  menu_id int not null references public.menus (id) on delete cascade,
+  rating int check (rating between 1 and 5),
+  created_at timestamptz not null default now(),
+  unique (user_id, menu_id)
+);
+
+alter table public.favorites enable row level security;
+
+drop policy if exists "favorites_select_own" on public.favorites;
+create policy "favorites_select_own"
+  on public.favorites for select
+  using (auth.uid() = user_id);
+
+drop policy if exists "favorites_insert_own" on public.favorites;
+create policy "favorites_insert_own"
+  on public.favorites for insert
+  with check (auth.uid() = user_id);
+
+drop policy if exists "favorites_update_own" on public.favorites;
+create policy "favorites_update_own"
+  on public.favorites for update
+  using (auth.uid() = user_id);
+
+drop policy if exists "favorites_delete_own" on public.favorites;
+create policy "favorites_delete_own"
+  on public.favorites for delete
+  using (auth.uid() = user_id);
+
+-- ---------------------------------------------------------
+-- 6) สิทธิ์แก้ไขข้อมูลกลาง (menus / ingredients / allergens) เฉพาะแอดมิน
+--    ผู้ใช้ทั่วไปอ่านได้อย่างเดียว (ตาม policy _public_read ด้านบน)
+--    "for all" ครอบคลุม insert/update/delete ในคำสั่งเดียว
+-- ---------------------------------------------------------
+drop policy if exists "menus_admin_write" on public.menus;
+create policy "menus_admin_write"
+  on public.menus for all
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop policy if exists "ingredients_admin_write" on public.ingredients;
+create policy "ingredients_admin_write"
+  on public.ingredients for all
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop policy if exists "allergens_admin_write" on public.allergens;
+create policy "allergens_admin_write"
+  on public.allergens for all
+  using (public.is_admin())
+  with check (public.is_admin());

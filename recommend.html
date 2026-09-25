@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ค้นหาเมนู — สมาชิก</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body data-page="recommend">
+
+  <div class="app-shell">
+    <aside class="app-sidebar" id="app-sidebar"></aside>
+    <div class="app-sidebar-overlay" id="app-sidebar-overlay"></div>
+
+    <div class="mobile-topbar">
+      <button class="mobile-topbar-toggle" aria-label="เปิดเมนู">☰</button>
+      <a href="dashboard.html" class="brand"><span class="brand-mark">🍲</span> กินอะไรดี</a>
+    </div>
+
+    <main class="app-main">
+      <div class="app-main-inner">
+
+        <div style="margin-bottom:24px">
+          <span class="eyebrow">โหมดสมาชิก · แนะนำเฉพาะบุคคล</span>
+          <h1 style="margin-bottom:6px">มีวัตถุดิบอะไรบ้างวันนี้?</h1>
+          <p class="mb-0">อาการแพ้ด้านล่างดึงมาจากโปรไฟล์ของคุณโดยอัตโนมัติ ปรับเปลี่ยนเฉพาะครั้งนี้ได้ตามต้องการ</p>
+        </div>
+
+        <div class="grid-2col">
+          <div class="col-side panel">
+            <h3>1. วัตถุดิบที่มีอยู่</h3>
+            <p class="form-note">พิมพ์ชื่อวัตถุดิบแล้วเลือกจากรายการ หรือกด Enter เพื่อเพิ่มเอง</p>
+            <div class="picker-search">
+              <input type="text" id="ingredient-input" class="input" placeholder="เช่น หมูสับ, ไข่ไก่, กะเพรา..." autocomplete="off" />
+              <div id="ingredient-results" class="picker-results"></div>
+            </div>
+            <div id="ingredient-chips" class="chip-list"></div>
+
+            <h3 style="margin-top:26px">2. อาการแพ้ / โรคประจำตัว</h3>
+            <p class="form-note">ดึงจากโปรไฟล์อัตโนมัติ · แก้ไขถาวรได้ที่หน้าโปรไฟล์</p>
+            <div id="condition-grid" class="condition-grid"></div>
+
+            <button id="btn-recommend" class="btn btn-primary btn-block" style="margin-top:24px">
+              แนะนำเมนูให้หน่อย
+            </button>
+          </div>
+
+          <div class="col-main">
+            <div id="results-summary" class="result-meta" style="margin-bottom:14px"></div>
+            <div id="results-list" class="result-list"></div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/recommend-engine.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/guard.js"></script>
+  <script src="js/recommend.js"></script>
+</body>
+</html>

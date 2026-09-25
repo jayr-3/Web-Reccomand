@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>เข้าสู่ระบบ — กินอะไรดี</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body data-page="login">
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="brand"><span class="brand-mark">🍲</span> กินอะไรดี</a>
+      <button class="nav-toggle" aria-label="เปิดเมนู" aria-expanded="false">☰</button>
+      <div class="nav-links">
+        <a href="index.html" class="nav-link" data-page="home">หน้าหลัก</a>
+        <a href="guest.html" class="nav-link" data-page="guest">ลองเลย (ไม่ต้องสมัคร)</a>
+        <a href="login.html" class="nav-link" data-page="login">เข้าสู่ระบบ</a>
+        <a href="register.html" class="nav-link btn btn-primary btn-sm" data-page="register">สมัครสมาชิก</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="auth-shell">
+    <div class="auth-card panel">
+      <h2 style="margin-bottom:4px">เข้าสู่ระบบ</h2>
+      <p style="margin-bottom:20px">เข้าสู่ระบบเพื่อรับคำแนะนำเมนูเฉพาะบุคคลจากประวัติของคุณ</p>
+
+      <div id="form-error" class="form-error"></div>
+
+      <form id="login-form">
+        <div class="field">
+          <label for="email">อีเมล</label>
+          <input type="email" id="email" class="input" required autocomplete="email"
+                 pattern="[\x00-\x7F]*" inputmode="email"
+                 title="กรุณากรอกเป็นภาษาอังกฤษเท่านั้น" />
+        </div>
+        <div class="field">
+          <label for="password">รหัสผ่าน</label>
+          <input type="password" id="password" class="input" required autocomplete="current-password"
+                 pattern="[\x00-\x7F]*"
+                 title="กรุณากรอกเป็นภาษาอังกฤษเท่านั้น" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">เข้าสู่ระบบ</button>
+      </form>
+
+      <p class="auth-switch">ยังไม่มีบัญชี? <a href="register.html">สมัครสมาชิก</a></p>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/ui.js"></script>
+  <script>
+    initNavbar();
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    restrictToAscii(emailInput);
+    restrictToAscii(passwordInput);
+
+    const form = document.getElementById("login-form");
+    const errorEl = document.getElementById("form-error");
+    const submitBtn = form.querySelector('button[type="submit"]');
+
+    bindAuthForm({
+      form,
+      submitBtn,
+      errorEl,
+      submittingText: "กำลังเข้าสู่ระบบ...",
+      onSubmit: async () => {
+        await DB.signIn({ email: emailInput.value.trim(), password: passwordInput.value });
+        Toast.show("เข้าสู่ระบบสำเร็จ", "success");
+        window.location.href = "dashboard.html";
+      },
+    });
+  </script>
+</body>
+</html>

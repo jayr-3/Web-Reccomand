@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>สมัครสมาชิก — กินอะไรดี</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body data-page="register">
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="brand"><span class="brand-mark">🍲</span> กินอะไรดี</a>
+      <button class="nav-toggle" aria-label="เปิดเมนู" aria-expanded="false">☰</button>
+      <div class="nav-links">
+        <a href="index.html" class="nav-link" data-page="home">หน้าหลัก</a>
+        <a href="guest.html" class="nav-link" data-page="guest">ลองเลย (ไม่ต้องสมัคร)</a>
+        <a href="login.html" class="nav-link" data-page="login">เข้าสู่ระบบ</a>
+        <a href="register.html" class="nav-link btn btn-primary btn-sm" data-page="register">สมัครสมาชิก</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="page-main">
+    <div class="container" style="max-width:640px">
+      <div class="panel">
+        <h2 style="margin-bottom:4px">สมัครสมาชิก</h2>
+        <p style="margin-bottom:22px">กรอกข้อมูลสุขภาพไว้ล่วงหน้า ครั้งต่อไประบบจะดึงมาใช้ให้อัตโนมัติโดยไม่ต้องกรอกซ้ำ</p>
+
+        <div id="form-error" class="form-error"></div>
+
+        <form id="register-form">
+          <div class="field">
+            <label for="name">ชื่อที่ใช้แสดงผล</label>
+            <input type="text" id="name" class="input" required />
+          </div>
+
+          <div class="field-row two">
+            <div class="field">
+              <label for="email">อีเมล</label>
+              <input type="email" id="email" class="input" required autocomplete="email"
+                     pattern="[\x00-\x7F]*" inputmode="email"
+                     title="กรุณากรอกเป็นภาษาอังกฤษเท่านั้น" />
+              <small>ใช้ตัวอักษรภาษาอังกฤษ ตัวเลข และสัญลักษณ์เท่านั้น</small>
+            </div>
+            <div class="field">
+              <label for="password">รหัสผ่าน</label>
+              <input type="password" id="password" class="input" required minlength="6" autocomplete="new-password"
+                     pattern="[\x00-\x7F]*"
+                     title="กรุณากรอกเป็นภาษาอังกฤษเท่านั้น" />
+              <small>อย่างน้อย 6 ตัวอักษร (ภาษาอังกฤษ/ตัวเลข/สัญลักษณ์)</small>
+            </div>
+          </div>
+
+          <h3 style="margin-top:10px">ข้อมูลสุขภาพ (ไม่บังคับ)</h3>
+          <p class="form-note">ใช้สำหรับคำนวณคำแนะนำเมนูให้เหมาะกับตัวคุณ แก้ไขภายหลังได้ที่หน้าโปรไฟล์</p>
+          <div class="field-row two">
+            <div class="field">
+              <label for="age">อายุ (ปี)</label>
+              <input type="number" id="age" class="input" min="1" max="120" />
+            </div>
+            <div class="field">
+              <label for="weight">น้ำหนัก (กก.)</label>
+              <input type="number" id="weight" class="input" min="1" step="0.1" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="height">ส่วนสูง (ซม.)</label>
+            <input type="number" id="height" class="input" min="1" />
+          </div>
+
+          <div class="field">
+            <label>อาการแพ้ / โรคประจำตัว <span class="muted" style="font-weight:400">(ไม่บังคับ ข้ามได้)</span></label>
+            <div id="condition-grid" class="condition-grid"></div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" style="margin-top:10px">สร้างบัญชี</button>
+        </form>
+
+        <p class="auth-switch">มีบัญชีอยู่แล้ว? <a href="login.html">เข้าสู่ระบบ</a></p>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/ui.js"></script>
+  <script>
+    (async function () {
+      initNavbar();
+
+      try {
+        await DataStore.init();
+      } catch (err) {
+        Toast.show(err.message || "โหลดตัวเลือกอาการแพ้ไม่สำเร็จ", "danger", 5000);
+      }
+
+      const conditionPicker = createConditionPicker(document.getElementById("condition-grid"));
+
+      const emailInput = document.getElementById("email");
+      const passwordInput = document.getElementById("password");
+      restrictToAscii(emailInput);
+      restrictToAscii(passwordInput);
+
+      const form = document.getElementById("register-form");
+      const errorEl = document.getElementById("form-error");
+      const submitBtn = form.querySelector('button[type="submit"]');
+
+      bindAuthForm({
+        form,
+        submitBtn,
+        errorEl,
+        submittingText: "กำลังสร้างบัญชี...",
+        onSubmit: async () => {
+          // อาการแพ้/โรคประจำตัวเป็นข้อมูลไม่บังคับ ไม่เลือกเลยก็สมัครได้ตามปกติ
+          await DB.signUp({
+            name: document.getElementById("name").value.trim(),
+            email: emailInput.value.trim(),
+            password: passwordInput.value,
+            age: Number(document.getElementById("age").value) || null,
+            weight: Number(document.getElementById("weight").value) || null,
+            height: Number(document.getElementById("height").value) || null,
+            healthConditions: conditionPicker.getSelected(), // อาจเป็น [] ได้ตามปกติ
+          });
+          Toast.show("สมัครสมาชิกสำเร็จ", "success");
+          window.location.href = "dashboard.html";
+        },
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>วันนี้กินอะไรดี — ระบบแนะนำเมนูอาหารประจำวัน</title>
+<meta name="description" content="เว็บแอปแนะนำเมนูอาหารจากวัตถุดิบที่มี พร้อมคัดกรองอาการแพ้อาหารและโรคประจำตัว" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body data-page="home">
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="brand"><span class="brand-mark">🍲</span> กินอะไรดี</a>
+      <button class="nav-toggle" aria-label="เปิดเมนู" aria-expanded="false">☰</button>
+      <div class="nav-links">
+        <a href="index.html" class="nav-link" data-page="home">หน้าหลัก</a>
+        <a href="guest.html" class="nav-link" data-page="guest">ลองเลย (ไม่ต้องสมัคร)</a>
+        <a href="login.html" class="nav-link" data-page="login">เข้าสู่ระบบ</a>
+        <a href="register.html" class="nav-link btn btn-primary btn-sm" data-page="register">สมัครสมาชิก</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="page-main" style="padding-top: var(--nav-h);">
+
+    <section class="section container hero">
+      <div class="hero-copy">
+        <span class="eyebrow">Recommendation System เพื่อการกินที่ปลอดภัย</span>
+        <h1>มีวัตถุดิบอะไรอยู่ในตู้เย็น<br>ให้เราช่วยคิดเมนูเย็นนี้ให้</h1>
+        <p class="lede">
+          บอกวัตถุดิบที่มี และแจ้งอาการแพ้หรือโรคประจำตัวที่ต้องระวัง
+          ระบบจะคัดกรองเมนูที่ไม่ปลอดภัยออกก่อน แล้วจึงแนะนำเมนูที่ทำได้จริง
+          จากของที่มีอยู่ตอนนี้ ไม่ต้องออกไปซื้อเพิ่ม
+        </p>
+        <div class="hero-actions">
+          <a href="guest.html" class="btn btn-primary">เริ่มค้นหาเมนูตอนนี้</a>
+          <a href="register.html" class="btn btn-outline">สมัครสมาชิกเพื่อบันทึกเมนูโปรด</a>
+        </div>
+      </div>
+
+      <div class="flow-figure">
+        <h3 style="margin-bottom:16px">ระบบทำงานอย่างไร</h3>
+        <ol class="flow-steps">
+          <li>
+            <span class="n">1</span>
+            <div><strong>ใส่ข้อมูล</strong><span>เลือกวัตถุดิบที่มี และแจ้งอาการแพ้ (ไม่บังคับ)</span></div>
+          </li>
+          <li>
+            <span class="n">2</span>
+            <div><strong>คัดกรองความปลอดภัย</strong><span>ตัดเมนูที่มีส่วนผสมต้องห้ามออกก่อนเป็นลำดับแรก</span></div>
+          </li>
+          <li>
+            <span class="n">3</span>
+            <div><strong>จับคู่วัตถุดิบ</strong><span>ให้คะแนนเมนูที่เหลือตามสัดส่วนวัตถุดิบที่มีอยู่จริง</span></div>
+          </li>
+          <li>
+            <span class="n">4</span>
+            <div><strong>รับคำแนะนำ</strong><span>ดูรายละเอียด ขั้นตอนทำ และเลือกเมนูที่ใช่สำหรับมื้อนี้</span></div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section container">
+      <div class="text-center" style="margin-bottom:28px">
+        <h2>เลือกวิธีใช้งานที่เหมาะกับคุณ</h2>
+        <p class="text-center" style="margin-inline:auto">ลองใช้งานได้ทันทีแบบไม่ต้องสมัคร หรือสมัครสมาชิกเพื่อให้ระบบจำความชอบของคุณ</p>
+      </div>
+      <div class="mode-cards">
+        <div class="mode-card">
+          <span class="glyph">🙋</span>
+          <h3>ผู้ใช้งานทั่วไป (Guest)</h3>
+          <p>เลือกวัตถุดิบและข้อจำกัดสุขภาพแบบรายครั้ง ไม่มีการบันทึกข้อมูลใด ๆ เหมาะกับการลองใช้งานเร็ว ๆ</p>
+          <a href="guest.html" class="btn btn-outline" style="margin-top:auto">เริ่มใช้งานแบบผู้เยี่ยมชม</a>
+        </div>
+        <div class="mode-card">
+          <span class="glyph">⭐</span>
+          <h3>ผู้ใช้งานสมาชิก (Member)</h3>
+          <p>บันทึกโปรไฟล์สุขภาพไว้ล่วงหน้า ระบบแนะนำเมนูเฉพาะบุคคลจากประวัติการกดถูกใจ และเก็บเมนูโปรดได้</p>
+          <a href="register.html" class="btn btn-primary" style="margin-top:auto">สมัครสมาชิกฟรี</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section container">
+      <h2 class="text-center" style="margin-bottom:24px">เปรียบเทียบฟีเจอร์</h2>
+      <div style="overflow-x:auto">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>ฟังก์ชันการทำงาน</th>
+              <th class="center">ผู้ใช้งานทั่วไป</th>
+              <th class="center">ผู้ใช้งานสมาชิก</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>ค้นหาและกรอกวัตถุดิบที่มี</td><td class="center"><span class="tick">✓</span></td><td class="center"><span class="tick">✓</span></td></tr>
+            <tr><td>คัดกรองอาการแพ้ / โรคประจำตัว</td><td class="center">กรอกใหม่ทุกครั้ง</td><td class="center">ดึงจากโปรไฟล์อัตโนมัติ</td></tr>
+            <tr><td>แนะนำเมนูจากวัตถุดิบที่มี</td><td class="center"><span class="tick">✓</span></td><td class="center"><span class="tick">✓</span></td></tr>
+            <tr><td>แนะนำเมนูเฉพาะบุคคลตามความชอบ</td><td class="center"><span class="dash">—</span></td><td class="center"><span class="tick">✓</span></td></tr>
+            <tr><td>บันทึกเมนูโปรด / ประวัติการใช้งาน</td><td class="center"><span class="dash">—</span></td><td class="center"><span class="tick">✓</span></td></tr>
+            <tr><td>ให้คะแนนความพึงพอใจเพื่อพัฒนาโมเดล</td><td class="center"><span class="dash">—</span></td><td class="center"><span class="tick">✓</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    โปรเจกต์นี้เป็นส่วนหนึ่งของวิชาปัญหาพิเศษ หลักสูตรวิทยาการคอมพิวเตอร์ · ข้อมูลเมนูอ้างอิงจาก Ajinomoto TH
+  </footer>
+
+  <script src="js/ui.js"></script>
+  <script>initNavbar();</script>
+</body>
+</html>

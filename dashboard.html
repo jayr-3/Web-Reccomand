@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>แดชบอร์ดของฉัน — กินอะไรดี</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body data-page="dashboard">
+
+  <div class="app-shell">
+    <aside class="app-sidebar" id="app-sidebar"></aside>
+    <div class="app-sidebar-overlay" id="app-sidebar-overlay"></div>
+
+    <div class="mobile-topbar">
+      <button class="mobile-topbar-toggle" aria-label="เปิดเมนู">☰</button>
+      <a href="dashboard.html" class="brand"><span class="brand-mark">🍲</span> กินอะไรดี</a>
+    </div>
+
+    <main class="app-main">
+      <div class="app-main-inner">
+
+        <div class="row" style="margin-bottom:28px">
+          <div id="avatar" class="avatar"></div>
+          <div>
+            <h1 id="greeting" style="margin-bottom:2px">สวัสดี</h1>
+            <div id="condition-summary" class="result-tags"></div>
+          </div>
+        </div>
+
+        <div class="stat-grid" style="margin-bottom:30px">
+          <div class="stat-card">
+            <div id="stat-favorites" class="num">0</div>
+            <div class="lbl">เมนูโปรดที่บันทึกไว้</div>
+          </div>
+          <div class="stat-card">
+            <div id="stat-rated" class="num">0</div>
+            <div class="lbl">เมนูที่ให้คะแนนแล้ว</div>
+          </div>
+          <div class="stat-card">
+            <div id="stat-conditions" class="num">0</div>
+            <div class="lbl">ข้อจำกัดสุขภาพในโปรไฟล์</div>
+          </div>
+        </div>
+
+        <h3 style="margin-bottom:14px">เมนูลัด</h3>
+        <div class="quick-links">
+          <a href="recommend.html" class="quick-link">
+            <span class="glyph">🔎</span>
+            <strong>ค้นหาเมนูวันนี้</strong>
+            <span class="muted">ระบบดึงข้อมูลสุขภาพจากโปรไฟล์ให้อัตโนมัติ</span>
+          </a>
+          <a href="history.html" class="quick-link">
+            <span class="glyph">❤️</span>
+            <strong>เมนูโปรดของฉัน</strong>
+            <span class="muted">ดูเมนูที่บันทึกไว้และประวัติการให้คะแนน</span>
+          </a>
+          <a href="profile.html" class="quick-link">
+            <span class="glyph">⚙️</span>
+            <strong>แก้ไขโปรไฟล์</strong>
+            <span class="muted">อัปเดตน้ำหนัก ส่วนสูง หรืออาการแพ้ล่าสุด</span>
+          </a>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/guard.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

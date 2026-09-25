@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>แผงควบคุมแอดมิน — กินอะไรดี</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body data-page="admin">
+
+  <div class="app-shell">
+    <aside class="app-sidebar" id="app-sidebar"></aside>
+    <div class="app-sidebar-overlay" id="app-sidebar-overlay"></div>
+
+    <div class="mobile-topbar">
+      <button class="mobile-topbar-toggle" aria-label="เปิดเมนู">☰</button>
+      <a href="dashboard.html" class="brand"><span class="brand-mark">🍲</span> กินอะไรดี</a>
+    </div>
+
+    <main class="app-main">
+      <div class="app-main-inner">
+      <span class="eyebrow">สำหรับแอดมินเท่านั้น</span>
+      <div class="row-wrap" style="margin-bottom:6px">
+        <h1 class="mb-0">แผงควบคุมแอดมิน</h1>
+        <span class="tag" style="background:#F3E8FF; color:#7E22CE">🛠️ โหมดแอดมิน</span>
+      </div>
+      <p style="margin-bottom:24px">จัดการข้อมูลเมนู วัตถุดิบ ตัวเลือกอาการแพ้ และสิทธิ์ผู้ใช้งานของทั้งระบบ</p>
+
+      <div class="tab-bar">
+        <button class="tab-btn is-active" data-tab="menus">เมนูอาหาร</button>
+        <button class="tab-btn" data-tab="ingredients">วัตถุดิบ</button>
+        <button class="tab-btn" data-tab="allergens">อาการแพ้</button>
+        <button class="tab-btn" data-tab="users">ผู้ใช้งาน</button>
+      </div>
+
+      <!-- ===== TAB: เมนูอาหาร ===== -->
+      <section class="tab-panel is-active" data-tab-panel="menus">
+        <div class="grid-2col">
+          <div class="col-side panel">
+            <h3 id="menu-form-title">เพิ่มเมนูใหม่</h3>
+            <div id="menu-form-error" class="form-error"></div>
+            <form id="menu-form">
+              <input type="hidden" id="menu-id" />
+              <div class="field">
+                <label for="menu-image">ลิงก์รูปภาพ (URL)</label>
+                <input type="url" id="menu-image" class="input" placeholder="วางลิงก์รูปภาพที่นี่" />
+              </div>
+              <div class="field">
+                <label for="menu-name">ชื่อเมนู</label>
+                <input type="text" id="menu-name" class="input" required />
+              </div>
+              <div class="field">
+                <label for="menu-ingredients">วัตถุดิบ (1 บรรทัดต่อ 1 รายการ)</label>
+                <textarea id="menu-ingredients" class="input" rows="6" required placeholder="หมูสับ 80 กรัม&#10;กระเทียม 4 กลีบ&#10;น้ำปลา 1 ช้อนโต๊ะ"></textarea>
+                <small>ใส่ปริมาณต่อท้ายได้ตามสบาย ระบบจะตัดตัวเลข/หน่วยออกให้อัตโนมัติตอนจับคู่วัตถุดิบ</small>
+              </div>
+              <div class="field">
+                <label for="menu-steps">วิธีทำ (1 บรรทัดต่อ 1 ขั้นตอน)</label>
+                <textarea id="menu-steps" class="input" rows="6" required placeholder="สับกระเทียมให้ละเอียด&#10;ผัดกระเทียมกับหมูสับจนสุก"></textarea>
+              </div>
+              <div class="row-wrap">
+                <button type="submit" class="btn btn-primary">บันทึกเมนู</button>
+                <button type="button" id="menu-form-cancel" class="btn btn-ghost hidden">ยกเลิกแก้ไข</button>
+              </div>
+            </form>
+          </div>
+          <div class="col-main">
+            <div id="menu-list" class="admin-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== TAB: วัตถุดิบ ===== -->
+      <section class="tab-panel" data-tab-panel="ingredients">
+        <div class="grid-2col">
+          <div class="col-side panel">
+            <h3 id="ingredient-form-title">เพิ่มวัตถุดิบใหม่</h3>
+            <div id="ingredient-form-error" class="form-error"></div>
+            <form id="ingredient-form">
+              <input type="hidden" id="ingredient-id" />
+              <div class="field">
+                <label for="ingredient-name">ชื่อวัตถุดิบ</label>
+                <input type="text" id="ingredient-name" class="input" required />
+              </div>
+              <div class="field">
+                <label for="ingredient-category">หมวดหมู่</label>
+                <input type="text" id="ingredient-category" class="input" list="ingredient-category-options" placeholder="เช่น เนื้อสัตว์, ผัก, อาหารทะเล, เครื่องปรุง" />
+                <datalist id="ingredient-category-options"></datalist>
+              </div>
+              <div class="row-wrap">
+                <button type="submit" class="btn btn-primary">บันทึกวัตถุดิบ</button>
+                <button type="button" id="ingredient-form-cancel" class="btn btn-ghost hidden">ยกเลิกแก้ไข</button>
+              </div>
+            </form>
+          </div>
+          <div class="col-main">
+            <div id="ingredient-list" class="admin-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== TAB: อาการแพ้ ===== -->
+      <section class="tab-panel" data-tab-panel="allergens">
+        <div class="grid-2col">
+          <div class="col-side panel">
+            <h3 id="allergen-form-title">เพิ่มตัวเลือกอาการแพ้ใหม่</h3>
+            <div id="allergen-form-error" class="form-error"></div>
+            <form id="allergen-form">
+              <div class="field">
+                <label for="allergen-id">รหัส (ภาษาอังกฤษ ไม่ซ้ำ)</label>
+                <input type="text" id="allergen-id" class="input" required pattern="[a-z0-9_\-]+" placeholder="เช่น shellfish" />
+                <small>ใช้อ้างอิงในระบบ แก้ไขไม่ได้หลังสร้างแล้ว</small>
+              </div>
+              <div class="field-row two">
+                <div class="field">
+                  <label for="allergen-label">ป้ายข้อความ</label>
+                  <input type="text" id="allergen-label" class="input" required placeholder="เช่น แพ้หอย" />
+                </div>
+                <div class="field">
+                  <label for="allergen-icon">ไอคอน (อิโมจิ)</label>
+                  <input type="text" id="allergen-icon" class="input" required placeholder="🦪" />
+                </div>
+              </div>
+              <div class="field">
+                <label for="allergen-keywords">คำสำคัญ (คั่นด้วยจุลภาค ,)</label>
+                <textarea id="allergen-keywords" class="input" rows="3" required placeholder="หอย, หอยแมลงภู่, หอยนางรม"></textarea>
+              </div>
+              <div class="field">
+                <label for="allergen-order">ลำดับการแสดงผล</label>
+                <input type="number" id="allergen-order" class="input" value="0" />
+              </div>
+              <div class="row-wrap">
+                <button type="submit" class="btn btn-primary">บันทึก</button>
+                <button type="button" id="allergen-form-cancel" class="btn btn-ghost hidden">ยกเลิกแก้ไข</button>
+              </div>
+            </form>
+          </div>
+          <div class="col-main">
+            <div id="allergen-list" class="admin-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== TAB: ผู้ใช้งาน ===== -->
+      <section class="tab-panel" data-tab-panel="users">
+        <p class="form-note" style="margin-bottom:16px">เลื่อน/ถอดสิทธิ์แอดมินของสมาชิกในระบบ</p>
+        <div id="user-list" class="admin-list"></div>
+      </section>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/guard.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

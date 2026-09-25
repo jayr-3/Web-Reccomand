@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ค้นหาเมนู — โหมดผู้ใช้งานทั่วไป</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body data-page="guest">
+
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="brand"><span class="brand-mark">🍲</span> กินอะไรดี</a>
+      <button class="nav-toggle" aria-label="เปิดเมนู" aria-expanded="false">☰</button>
+      <div class="nav-links">
+        <a href="index.html" class="nav-link" data-page="home">หน้าหลัก</a>
+        <a href="guest.html" class="nav-link" data-page="guest">ลองเลย (ไม่ต้องสมัคร)</a>
+        <a href="login.html" class="nav-link" data-page="login">เข้าสู่ระบบ</a>
+        <a href="register.html" class="nav-link btn btn-primary btn-sm" data-page="register">สมัครสมาชิก</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="page-main">
+    <div class="container">
+      <div class="spread" style="margin-bottom:24px; align-items:flex-start; flex-wrap:wrap;">
+        <div>
+          <span class="eyebrow">โหมดผู้ใช้งานทั่วไป</span>
+          <h1 style="margin-bottom:6px">มีวัตถุดิบอะไรบ้างวันนี้?</h1>
+          <p class="mb-0">ข้อมูลที่กรอกในหน้านี้ใช้ครั้งเดียวและจะไม่ถูกบันทึกไว้ในระบบ</p>
+        </div>
+        <a href="register.html" class="btn btn-outline btn-sm">อยากบันทึกเมนูโปรด? สมัครสมาชิก →</a>
+      </div>
+
+      <div class="grid-2col">
+        <!-- ฝั่งซ้าย: ฟอร์มเลือกวัตถุดิบ + อาการแพ้ -->
+        <div class="col-side panel">
+          <h3>1. วัตถุดิบที่มีอยู่</h3>
+          <p class="form-note">พิมพ์ชื่อวัตถุดิบแล้วเลือกจากรายการ หรือกด Enter เพื่อเพิ่มเอง</p>
+          <div class="picker-search">
+            <input type="text" id="ingredient-input" class="input" placeholder="เช่น หมูสับ, ไข่ไก่, กะเพรา..." autocomplete="off" />
+            <div id="ingredient-results" class="picker-results"></div>
+          </div>
+          <div id="ingredient-chips" class="chip-list"></div>
+
+          <h3 style="margin-top:26px">2. อาการแพ้ / โรคประจำตัว (ถ้ามี)</h3>
+          <p class="form-note">เลือกได้มากกว่า 1 ข้อ ระบบจะตัดเมนูที่มีส่วนผสมเหล่านี้ออกให้อัตโนมัติ</p>
+          <div id="condition-grid" class="condition-grid"></div>
+
+          <button id="btn-recommend" class="btn btn-primary btn-block" style="margin-top:24px">
+            แนะนำเมนูให้หน่อย
+          </button>
+        </div>
+
+        <!-- ฝั่งขวา: ผลลัพธ์ -->
+        <div class="col-main">
+          <div id="results-summary" class="result-meta" style="margin-bottom:14px"></div>
+          <div id="results-list" class="result-list"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">โปรเจกต์นี้เป็นส่วนหนึ่งของวิชาปัญหาพิเศษ หลักสูตรวิทยาการคอมพิวเตอร์</footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/recommend-engine.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/guest.js"></script>
+</body>
+</html>
