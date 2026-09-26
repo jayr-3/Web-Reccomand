@@ -41,45 +41,57 @@ const RecommendEngine = (() => {
    * @param {Object<string, number>} [options.likedIngredientFreq] ความถี่วัตถุดิบในเมนูที่สมาชิกเคยถูกใจ/ให้คะแนนดี
    * @param {Set<number>} [options.likedMenuIds] เมนูที่เคยถูกใจมาก่อน (กันไม่ให้คะแนน personalization เพี้ยนกับเมนูเดิม)
    */
+  /**
+   * ขั้นตอนที่ 2: ให้คะแนนความเข้ากันได้ของวัตถุดิบ + personalization (ถ้ามี)
+   */
   function scoreMenus(menus, availableIngredients, options = {}) {
     const { likedIngredientFreq = {}, favoriteMenuIds = new Set() } = options;
     const maxFreq = Math.max(1, ...Object.values(likedIngredientFreq));
 
-    return menus
-      .map((menu) => {
-        const total = menu.ingredients.length;
-        const matched = [];
-        const missing = [];
+    // 1. คำนวณคะแนนของแต่ละเมนูตามปกติ
+    let scoredResults = menus.map((menu) => {
+      const total = menu.ingredients.length;
+      const matched = [];
+      const missing = [];
 
-        menu.ingredients.forEach((ing) => {
-          const hit = availableIngredients.some((userIng) => ingredientMatches(userIng, ing.name));
-          if (hit) matched.push(ing);
-          else missing.push(ing);
-        });
+      menu.ingredients.forEach((ing) => {
+        const hit = availableIngredients.some((userIng) => ingredientMatches(userIng, ing.name));
+        if (hit) matched.push(ing);
+        else missing.push(ing);
+      });
 
-        const baseScore = total > 0 ? matched.length / total : 0;
+      const baseScore = total > 0 ? matched.length / total : 0;
 
-        // personalization: เฉลี่ยความถี่ของวัตถุดิบเมนูนี้ในประวัติที่เคยถูกใจ (0..1)
-        const personalScores = menu.ingredients.map(
-          (ing) => (likedIngredientFreq[normalize(ing.name)] || 0) / maxFreq
-        );
-        const personalBoost =
-          personalScores.length > 0 ? personalScores.reduce((a, b) => a + b, 0) / personalScores.length : 0;
+      // personalization: เฉลี่ยความถี่ของวัตถุดิบเมนูนี้ในประวัติที่เคยถูกใจ (0..1)
+      const personalScores = menu.ingredients.map(
+        (ing) => (likedIngredientFreq[normalize(ing.name)] || 0) / maxFreq
+      );
+      const personalBoost =
+        personalScores.length > 0 ? personalScores.reduce((a, b) => a + b, 0) / personalScores.length : 0;
 
-        const hasPersonalization = Object.keys(likedIngredientFreq).length > 0;
-        const finalScore = hasPersonalization ? baseScore * 0.75 + personalBoost * 0.25 : baseScore;
+      const hasPersonalization = Object.keys(likedIngredientFreq).length > 0;
+      const finalScore = hasPersonalization ? baseScore * 0.75 + personalBoost * 0.25 : baseScore;
 
-        return {
-          menu,
-          matchedCount: matched.length,
-          totalCount: total,
-          missing,
-          pct: Math.round(finalScore * 100),
-          ready: matched.length === total,
-          isFavorite: favoriteMenuIds.has(menu.id),
-        };
-      })
-      .sort((a, b) => b.pct - a.pct || b.matchedCount - a.matchedCount);
+      return {
+        menu,
+        matchedCount: matched.length,
+        totalCount: total,
+        missing,
+        pct: Math.round(finalScore * 100),
+        ready: matched.length === total,
+        isFavorite: favoriteMenuIds.has(menu.id),
+      };
+    });
+
+    // -----------------------------------------------------------------
+    // [จุดที่แก้ไข] หากมีการกรอกวัตถุดิบ ให้คัดเมนูที่ไม่มีวัตถุดิบนั้นเลย (matchedCount === 0) ออกทันที
+    // -----------------------------------------------------------------
+    if (availableIngredients && availableIngredients.length > 0) {
+      scoredResults = scoredResults.filter((item) => item.matchedCount > 0);
+    }
+
+    // 2. จัดเรียงลำดับคะแนนจากมากไปน้อย
+    return scoredResults.sort((a, b) => b.pct - a.pct || b.matchedCount - a.matchedCount);
   }
 
   /** จุดเรียกใช้งานหลัก: กรองสุขภาพก่อน แล้วค่อยให้คะแนน */

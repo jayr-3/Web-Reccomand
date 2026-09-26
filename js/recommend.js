@@ -78,13 +78,18 @@
         ? `พบ ${results.length} เมนูที่ปลอดภัยสำหรับคุณ (คัดออกไปแล้ว ${excludedCount} เมนู) · เรียงตามความเหมาะสมกับคุณ`
         : `พบ ${results.length} เมนูที่ตรงกับวัตถุดิบของคุณ · เรียงตามความเหมาะสมกับคุณ`;
 
-    listEl.innerHTML = "";
-    const defaultImage = "https://placehold.co/150x150?text=No+Image";
+    // ... (โค้ดบรรทัดก่อนหน้า)
+  listEl.innerHTML = "";
+  const defaultImage = "https://placehold.co/150x150?text=No+Image";
 
-    results.forEach((match) => {
-      const imageUrl = match.menu.image_url && match.menu.image_url.trim() !== "" ? match.menu.image_url : defaultImage;
-      const row = document.createElement("div");
-      row.className = "result-row";
+  results.forEach((match) => {
+    // วาง console.log ตรงนี้ (หลังปีกกาเปิดของ forEach)
+    console.log("Check Menu Object:", match.menu);
+
+    const imageUrl = match.menu.image_url && match.menu.image_url.trim() !== "" ? match.menu.image_url : defaultImage;
+    const row = document.createElement("div");
+    row.className = "result-row";
+    
       // ปรับ Grid ให้รองรับรูปภาพด้านหน้า (รูปภาพ | วงแหวนเปอร์เซ็นต์ | ข้อความ | ลูกศร)
       row.style.gridTemplateColumns = "60px auto 1fr auto";
       row.style.gap = "12px";
@@ -128,5 +133,5 @@
 
   document.getElementById("btn-recommend").addEventListener("click", runRecommendation);
 
-  renderEmpty("เลือกวัตถุดิบที่มี แล้วกด “แนะนำเมนูให้หน่อย” เพื่อเริ่มค้นหา", "👋");
+  renderEmpty("เลือกวัตถุดิบที่มี แล้วกด “แนะนำเมนูให้หน่อย” เพื่อเริ่มค้นหา", "🧑‍🍳");
 })();

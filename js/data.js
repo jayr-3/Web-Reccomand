@@ -33,7 +33,7 @@ const DataStore = (() => {
     ensureSupabase();
 
     const [menuRes, ingredientRes, allergenRes] = await Promise.all([
-      supa.from("menus").select("id, name, ingredients, steps").order("id"),
+      supa.from("menus").select("id, name, ingredients, steps, image_url").order("id"),
       supa.from("ingredients").select("name, category").order("name"),
       supa.from("allergens").select("id, label, icon, keywords").order("sort_order"),
     ]);
@@ -53,6 +53,7 @@ const DataStore = (() => {
       name: m.name,
       ingredients: m.ingredients,
       steps: m.steps,
+      image_url: m.image_url,
       allergenTags: tagAllergens(m.ingredients, allergens),
     }));
   }

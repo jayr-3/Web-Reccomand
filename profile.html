@@ -1,69 +1,190 @@
 <!DOCTYPE html>
 <html lang="th">
+  <style>
+    /* บังคับให้ Modal ในหน้าโปรไฟล์มาอยู่ตรงกลางหน้าจอ */
+    #profile-modal,
+    #ratings-modal,
+    #crop-modal {
+      display: none; /* ซ่อนไว้ก่อนตามปกติ */
+      align-items: center;
+      justify-content: center;
+    }
+
+    #profile-modal.is-open,
+    #ratings-modal.is-open,
+    #crop-modal.is-open {
+      display: flex; /* เมื่อเปิดให้ใช้ Flexbox เพื่อจัดกึ่งกลาง */
+    }
+
+    /* ล้างค่าการชิดขวาของ .drawer เดิม และปรับให้เป็นกล่องตรงกลาง */
+    #profile-modal .drawer,
+    #ratings-modal .drawer,
+    #crop-modal .drawer {
+      position: relative;
+      right: auto;
+      top: auto;
+      bottom: auto;
+      height: auto;
+      width: 100%;
+      margin: 0 20px; /* เว้นระยะขอบซ้ายขวาเผื่อจอมือถือ */
+      transform: none; /* ยกเลิกอนิเมชั่นเลื่อนจากด้านข้าง */
+    }
+  </style>
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>โปรไฟล์ของฉัน — กินอะไรดี</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>แดชบอร์ดและโปรไฟล์ — กินอะไรดี</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- หากมีการใช้ Chart.js สำหรับกราฟ ให้ใส่ลิงก์ Script ตรงนี้ (ถ้ามี) -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
 </head>
 <body data-page="profile">
-
   <div class="app-shell">
+    
     <aside class="app-sidebar" id="app-sidebar"></aside>
     <div class="app-sidebar-overlay" id="app-sidebar-overlay"></div>
 
     <div class="mobile-topbar">
       <button class="mobile-topbar-toggle" aria-label="เปิดเมนู">☰</button>
-      <a href="dashboard.html" class="brand"><span class="brand-mark">🍲</span> กินอะไรดี</a>
+      <a href="recommend.html" class="brand"><span class="brand-mark">🍲</span> กินอะไรดี</a>
     </div>
 
+    <!-- 3. ส่วนเนื้อหาหลัก -->
     <main class="app-main">
-      <div class="app-main-inner" style="max-width:640px">
-        <h1 style="margin-bottom:20px">โปรไฟล์ของฉัน</h1>
-
-        <div class="panel">
-          <div id="form-error" class="form-error"></div>
-          <form id="profile-form">
-            <div class="field">
-              <label for="name">ชื่อที่ใช้แสดงผล</label>
-              <input type="text" id="name" class="input" required />
-            </div>
-
-            <div class="field-row two">
-              <div class="field">
-                <label for="age">อายุ (ปี)</label>
-                <input type="number" id="age" class="input" min="1" max="120" />
-              </div>
-              <div class="field">
-                <label for="weight">น้ำหนัก (กก.)</label>
-                <input type="number" id="weight" class="input" min="1" step="0.1" />
-              </div>
-            </div>
-            <div class="field">
-              <label for="height">ส่วนสูง (ซม.)</label>
-              <input type="number" id="height" class="input" min="1" />
-            </div>
-
-            <div class="field">
-              <label>อาการแพ้ / โรคประจำตัว</label>
-              <div id="condition-grid" class="condition-grid"></div>
-            </div>
-
-            <button type="submit" class="btn btn-primary btn-block" style="margin-top:10px">บันทึกการเปลี่ยนแปลง</button>
-          </form>
+      <div class="app-main-inner" style="max-width:800px">
+        
+        <!-- ========================================== -->
+        <!-- แดชบอร์ด Header -->
+        <!-- ========================================== -->
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+          <div class="avatar" id="dash-avatar" style="width: 64px; height: 64px; font-size: 28px; background: #FF5A1F; color: white; display: flex; justify-content: center; align-items: center; border-radius: 50%;">?</div>
+          <div>
+            <h1 style="margin: 0; font-size: 2rem;">Hi! <span id="dash-name">...</span></h1>
+          </div>
         </div>
-      </div>
-    </main>
-  </div>
 
+        <!-- ========================================== -->
+        <!-- กล่องสถิติ (Stats Grid) -->
+        <!-- ========================================== -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 32px;">
+          
+          <!-- กล่อง 1: เมนูโปรด (คลิกแล้วไปหน้า history.html) -->
+          <a href="history.html" class="panel" style="text-decoration: none; color: inherit; padding: 20px; display: block; cursor: pointer; border: 1px solid #eaeaea;">
+            <div id="stat-fav-count" style="font-size: 2rem; font-weight: bold; color: #FF5A1F; margin-bottom: 8px;">0</div>
+            <div style="color: #666; font-size: 0.95rem;">เมนูโปรดที่บันทึกไว้</div>
+          </a>
+
+          <!-- กล่อง 2: เมนูที่ให้คะแนนแล้ว (คลิกแล้วเปิด Modal) -->
+          <div class="panel" id="btn-show-ratings" style="padding: 20px; cursor: pointer; border: 1px solid #eaeaea;">
+            <div id="stat-rating-count" style="font-size: 2rem; font-weight: bold; color: #FF5A1F; margin-bottom: 8px;">0</div>
+            <div style="color: #666; font-size: 0.95rem;">เมนูที่ให้คะแนนแล้ว</div>
+          </div>
+
+          <!-- กล่อง 3: ข้อจำกัดสุขภาพ (แสดงชื่ออาการแพ้) -->
+          <div class="panel" style="padding: 20px; border: 1px solid #eaeaea;">
+            <div id="stat-allergies-list" style="font-size: 1.1rem; font-weight: bold; color: #FF5A1F; margin-bottom: 8px; min-height: 2.4rem; line-height: 1.4;">ไม่มี</div>
+            <div style="color: #666; font-size: 0.95rem;">ข้อจำกัดสุขภาพในโปรไฟล์</div>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!--  เมนูลัด (Shortcuts) -->
+        <!-- ========================================== -->
+        <h2 style="font-size: 1.2rem; margin-bottom: 16px;">เมนูลัด</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin-bottom: 40px;">
+          <!-- ปุ่มแก้ไขโปรไฟล์ (เปลี่ยนจากลิงก์ <a> เป็น <div> เพื่อกดแล้วเปิด Modal) -->
+          <div id="btn-edit-profile" class="panel" style="cursor: pointer; border: 1px solid #eaeaea; padding: 20px;">
+            <div style="font-size: 1.5rem; margin-bottom: 8px;">⚙️</div>
+            <h3 style="margin: 0 0 8px 0; font-size: 1.1rem;">แก้ไขโปรไฟล์</h3>
+            <p style="margin: 0; color: #666; font-size: 0.9rem;">อัปเดตน้ำหนัก ส่วนสูง หรืออาการแพ้ล่าสุด</p>
+          </div>
+        </div>
+        <!-- ========================================== -->
+        <!-- Modal: รายการเมนูที่ให้คะแนนแล้ว -->
+        <!-- ========================================== -->
+        <div id="ratings-modal" class="overlay">
+          <div class="drawer" role="dialog" aria-modal="true" style="max-height: 80vh; max-width: 500px; margin: 20px auto; border-radius: 12px; display: flex; flex-direction: column;">
+            <div class="drawer-head">
+              <h3 class="drawer-title" style="margin:0">เมนูที่คุณให้คะแนน</h3>
+              <button type="button" class="drawer-close" id="close-ratings-modal" aria-label="ปิด">✕</button>
+            </div>
+            
+            <!-- จุดสำคัญ: ต้องมี id="ratings-modal-body" ให้ JavaScript อ้างอิง -->
+            <div class="drawer-body" id="ratings-modal-body" style="overflow-y: auto; padding: 20px;">
+            </div>
+            
+          </div>
+        </div>
+        <!-- ========================================== -->
+        <!--  Modal ฟอร์มแก้ไขโปรไฟล์ -->
+        <!-- ========================================== -->
+        <div id="profile-modal" class="overlay">
+          <div class="drawer" role="dialog" aria-modal="true" style="max-height: 90vh; overflow-y: auto; max-width: 600px; margin: 20px auto; border-radius: 12px;">
+            <div class="drawer-head">
+              <h3 class="drawer-title" style="margin:0">แก้ไขโปรไฟล์</h3>
+              <button type="button" class="drawer-close" id="close-profile-modal" aria-label="ปิด">✕</button>
+            </div>
+            <div class="drawer-body">
+              <div id="form-error" class="form-error"></div>
+              
+              <form id="profile-form">
+                <!-- ส่วนอัปโหลดรูปโปรไฟล์ -->
+                <div style="text-align: center; margin-bottom: 24px;">
+                  <div id="avatar-preview-container" style="width: 100px; height: 100px; border-radius: 50%; background: #eee; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px dashed #ccc; position: relative;">
+                    <img id="avatar-preview-img" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;" />
+                    <span id="avatar-preview-text" style="color: #999; font-size: 0.8rem;">รูปโปรไฟล์</span>
+                  </div>
+                  <label for="avatar-upload" class="btn btn-outline" style="cursor: pointer; font-size: 0.9rem; padding: 6px 12px;">
+                    อัปโหลดรูปใหม่
+                  </label>
+                  <input type="file" id="avatar-upload" accept="image/jpeg, image/png, image/webp" style="display: none;" />
+                </div>
+
+                <div class="field">
+                  <label for="name">ชื่อที่ใช้แสดงผล</label>
+                  <input type="text" id="name" class="input" required />
+                </div>
+
+                <div class="field-row two">
+                  <div class="field">
+                    <label for="age">อายุ (ปี)</label>
+                    <input type="number" id="age" class="input" min="1" max="120" />
+                  </div>
+                  <div class="field">
+                    <label for="weight">น้ำหนัก (กก.)</label>
+                    <input type="number" id="weight" class="input" min="1" step="0.1" />
+                  </div>
+                </div>
+                
+                <div class="field">
+                  <label for="height">ส่วนสูง (ซม.)</label>
+                  <input type="number" id="height" class="input" min="1" />
+                </div>
+
+                <div class="field">
+                  <label>อาการแพ้ / โรคประจำตัว</label>
+                  <div id="condition-grid" class="condition-grid"></div>
+                </div>
+
+                <button type="submit" id="btn-save-profile" class="btn btn-primary btn-block" style="margin-top:10px">บันทึกการเปลี่ยนแปลง</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/db.js"></script>
   <script src="js/data.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/guard.js"></script>
+  
+  <!-- ถ้านำกราฟมา ให้ดึงสคริปต์ของ dashboard มาทำงานในหน้านี้ด้วย -->
+  <script src="js/dashboard.js"></script> 
+  
   <script src="js/profile.js"></script>
 </body>
 </html>

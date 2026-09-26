@@ -9,15 +9,11 @@
 
 /* ---------- App shell (sidebar) สำหรับหน้าสมาชิก/แอดมิน ---------- */
 /**
- * วาด sidebar ของพื้นที่ที่ต้องล็อกอิน (dashboard/recommend/history/profile/admin)
- * ให้หน้าตาต่างจากหน้า guest/marketing ที่ใช้ navbar บนแบบเดิมอย่างชัดเจน
+ * วาด sidebar ของพื้นที่ที่ต้องล็อกอิน (recommend/history/profile/admin)
  * แสดงลิงก์ "แผงควบคุมแอดมิน" และป้าย role สีต่างเฉพาะบัญชีที่เป็นแอดมินเท่านั้น
  *
- * ต้องมี element #app-sidebar, #app-sidebar-overlay และปุ่ม .mobile-topbar-toggle
- * อยู่ใน HTML ของหน้าอยู่แล้ว (ดูตัวอย่างใน dashboard.html)
- *
  * @param {Object} opts
- * @param {"dashboard"|"recommend"|"history"|"profile"|"admin"} opts.activePage
+ * @param {"recommend"|"history"|"profile"|"admin"} opts.activePage
  * @param {{id:string, email:string}} opts.user
  * @param {{name?:string, role?:string}} [opts.profile]
  */
@@ -26,8 +22,9 @@ function renderAppShell({ activePage, user, profile }) {
   const displayName = profile?.name || user?.email || "";
   const initial = displayName.trim().charAt(0).toUpperCase() || "?";
 
+  // รายการเมนูหลัก (ลบแดชบอร์ดออกแล้ว)
   const navItems = [
-    { page: "dashboard", href: "dashboard.html", icon: "🏠", label: "แดชบอร์ด" },
+    { page: "home", href: "home.html", icon: "🏠", label: "หน้าหลัก" },
     { page: "recommend", href: "recommend.html", icon: "🔎", label: "ค้นหาเมนู" },
     { page: "history", href: "history.html", icon: "❤️", label: "เมนูโปรด/ประวัติ" },
     { page: "profile", href: "profile.html", icon: "⚙️", label: "โปรไฟล์" },
@@ -56,7 +53,7 @@ function renderAppShell({ activePage, user, profile }) {
   const sidebarEl = document.getElementById("app-sidebar");
   if (sidebarEl) {
     sidebarEl.innerHTML = `
-      <a href="dashboard.html" class="sidebar-brand"><span class="brand-mark">🍲</span> กินอะไรดี</a>
+      <a href="recommend.html" class="sidebar-brand"><span class="brand-mark">🍲</span> กินอะไรดี</a>
       <div class="sidebar-user">
         <div class="avatar avatar-sidebar">${initial}</div>
         <div class="sidebar-user-info">
@@ -188,7 +185,7 @@ function createIngredientPicker({ inputEl, resultsEl, chipListEl, emptyText = "�
     if (e.key === "Enter") {
       e.preventDefault();
       const q = inputEl.value.trim();
-      if (q) addIngredient(q); // อนุญาตให้พิมพ์วัตถุดิบเองได้แม้ไม่อยู่ในรายการ
+      if (q) addIngredient(q);
     }
     if (e.key === "Escape") closeResults();
   });
@@ -276,13 +273,6 @@ const MenuDrawer = (() => {
     overlayEl.classList.remove("is-open");
   }
 
-  /**
-   * @param {Object} match ผลลัพธ์จาก RecommendEngine.scoreMenus() รายการเดียว
-   * @param {Object} [opts]
-   * @param {boolean} [opts.showMemberActions] แสดงปุ่มบันทึกเมนูโปรด/ให้คะแนน (เฉพาะสมาชิก)
-   * @param {Function} [opts.onToggleFavorite] (menuId, isFavorite) => void
-   * @param {Function} [opts.onRate] (menuId, rating) => void
-   */
   function open(match, opts = {}) {
     ensureDom();
     const { menu, matchedCount, totalCount, missing, pct, isFavorite = false } = match;
@@ -303,7 +293,13 @@ const MenuDrawer = (() => {
       .map((s) => `<li>${s.replace(/^\d+\.\s*/, "")}</li>`)
       .join("");
 
+    const defaultImg = "https://placehold.co/400x300?text=No+Image";
+    const imgUrl = menu.image_url && menu.image_url.trim() !== "" ? menu.image_url : defaultImg;
+
     drawerBodyEl.innerHTML = `
+      <div class="drawer-hero" style="width: 100%; margin-bottom: 24px; border-radius: 8px; overflow: hidden; background: #F7F7F8;">
+        <img src="${imgUrl}" alt="${menu.name}" onerror="this.src='${defaultImg}'" style="width: 100%; height: 260px; object-fit: cover; display: block;" />
+      </div>
       <div class="row-wrap" style="margin-bottom:18px">
         <span class="tag ${pct === 100 ? "tag-ready" : "tag-missing"}">${pct === 100 ? "ทำได้ทันที" : `ขาด ${totalCount - matchedCount} อย่าง`}</span>
         <span class="tag">ตรงกับวัตถุดิบที่มี ${pct}%</span>
@@ -358,10 +354,6 @@ const MenuDrawer = (() => {
   return { open, close };
 })();
 
-/**
- * แสดงข้อความ error แบบเต็มพื้นที่ เมื่อโหลดข้อมูลจาก Supabase ไม่สำเร็จ
- * (เช่น ยังไม่ได้รัน schema.sql/seed.sql หรือไม่ได้เชื่อมต่ออินเทอร์เน็ต)
- */
 function renderFatalError(container, message) {
   container.innerHTML = `
     <div class="empty-state">
@@ -370,12 +362,7 @@ function renderFatalError(container, message) {
     </div>`;
 }
 
-/* ---------- Auth form helpers (ใช้ร่วมกันในหน้า login.html / register.html) ---------- */
-
-/**
- * บังคับให้ช่อง input พิมพ์ได้เฉพาะอักขระภาษาอังกฤษ/ตัวเลข/สัญลักษณ์ (ASCII)
- * ตัดอักขระอื่น (เช่น ภาษาไทย, อิโมจิ) ออกทันทีที่พิมพ์หรือวาง
- */
+/* ---------- Auth form helpers ---------- */
 function restrictToAscii(inputEl) {
   inputEl.addEventListener("input", () => {
     const cleaned = inputEl.value.replace(/[^\x00-\x7F]/g, "");
@@ -383,7 +370,6 @@ function restrictToAscii(inputEl) {
   });
 }
 
-/** แปลงข้อความ error จาก Supabase Auth ให้เป็นภาษาไทยที่เข้าใจง่ายขึ้น */
 function mapAuthErrorMessage(message = "") {
   const msg = message.toLowerCase();
   if (msg.includes("already registered") || msg.includes("already exists")) {
@@ -404,10 +390,6 @@ function mapAuthErrorMessage(message = "") {
   return message || "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง";
 }
 
-/**
- * ผูก submit handler ของฟอร์ม auth (login/register) ให้ปิดปุ่มระหว่างส่งคำขอ
- * กันการกดซ้ำหลายครั้ง และแสดง error ด้วยข้อความที่แปลแล้ว
- */
 function bindAuthForm({ form, submitBtn, errorEl, submittingText, onSubmit }) {
   const originalText = submitBtn.textContent;
   form.addEventListener("submit", async (e) => {

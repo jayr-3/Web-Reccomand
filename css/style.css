@@ -4,7 +4,7 @@
    โครงสร้าง: Tokens -> Base -> Layout -> Components -> Pages -> Utilities
    ========================================================= */
 
-/* ---------- 1. Design tokens ---------- */
+/* ----------  Design tokens ---------- */
 :root {
   /* พื้นหลังขาวสะอาด ใช้ส้มเป็นสีหลักเพียงสีเดียว ส่วนแดง/เขียวสงวนไว้
      สื่อความหมายเชิงความปลอดภัยของอาหาร (แพ้/ปลอดภัย) เท่านั้น */
@@ -135,7 +135,31 @@ button { font-family: inherit; }
 
 .section { padding: 56px 0; }
 .section-tight { padding: 32px 0; }
+/* =========================================
+   Home Page Styles (หน้าหลัก)
+========================================= */
+.home-container {
+  max-width: 1000px;
+  margin-left: 260px;
+  padding: 32px 24px 40px 24px;
+  font-family: var(--font-body); /* ดึงฟอนต์เนื้อหาของระบบ */
+}
 
+/* หัวข้อทั้งหมดในหน้า Home ให้ใช้ฟอนต์หัวข้อของระบบ */
+.home-title,
+.hero-title,
+.section-title,
+.news-card-title {
+  font-family: var(--font-display);
+}
+
+/* รายละเอียดและปุ่ม ให้ใช้ฟอนต์เนื้อหาของระบบ */
+.home-subtitle,
+.hero-desc,
+.news-card-desc,
+.btn-action {
+  font-family: var(--font-body);
+}
 /* ---------- 4. Navbar ---------- */
 .navbar {
   position: fixed;
@@ -398,7 +422,8 @@ button { font-family: inherit; }
 
 .result-row {
   display: grid;
-  grid-template-columns: 56px 1fr auto;
+  /* 1. ปรับคอลัมน์แรกจาก 56px เป็น 120px และรองรับ 4 คอลัมน์ (รูป, เปอร์เซ็นต์, ข้อความ, ปุ่ม) */
+  grid-template-columns: 120px auto 1fr auto;
   align-items: center;
   gap: 16px;
   background: var(--surface);
@@ -407,6 +432,14 @@ button { font-family: inherit; }
   padding: 14px 16px;
   cursor: pointer;
   transition: border-color 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
+}
+
+/* 2. เพิ่มสไตล์ให้รูปภาพในรายการผลลัพธ์มีขนาด 120x120px */
+.result-row img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
 }
 .result-row:hover { border-color: var(--primary); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
 
@@ -802,7 +835,7 @@ button { font-family: inherit; }
 .auth-card { width: 100%; max-width: 420px; }
 .auth-switch { text-align: center; margin-top: 16px; font-size: 0.92rem; color: var(--ink-soft); }
 
-/* ---------- 16. Utilities ---------- */
+/* ---------- 17. Utilities ---------- */
 .text-center { text-align: center; }
 .mt-0 { margin-top: 0; }
 .mb-0 { margin-bottom: 0; }
@@ -848,6 +881,129 @@ button { font-family: inherit; }
   height: 80px;
   flex-shrink: 0;
   border-radius: 8px;
+}
+/* =========================================
+   Home Page Styles (หน้าหลัก)
+========================================= */
+.home-container {
+  max-width: 1000px;
+  /* แก้จุดนี้: เว้นระยะฝั่งซ้ายหนี Sidebar (260px) และจัดระยะ Padding ให้สมดุล */
+  margin-left: 260px;
+  padding: 32px 24px 40px 24px;
+}
+.home-header {
+  margin-bottom: 32px;
+}
+.home-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #222;
+  margin: 0;
+}
+.home-subtitle {
+  color: #666;
+  font-size: 1rem;
+  margin-top: 8px;
+}
+.hero-banner {
+  background: linear-gradient(135deg, #FF5A1F 0%, #FF8C66 100%);
+  color: white;
+  padding: 40px;
+  border-radius: 20px;
+  margin-bottom: 40px;
+  box-shadow: 0 10px 30px rgba(255, 90, 31, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+.hero-banner::after {
+  content: "";
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 200px;
+  height: 200px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+}
+.hero-title {
+  margin: 0 0 12px 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+  position: relative;
+  z-index: 1;
+}
+.hero-desc {
+  margin: 0;
+  line-height: 1.6;
+  font-size: 1.05rem;
+  max-width: 85%;
+  opacity: 0.95;
+  position: relative;
+  z-index: 1;
+}
+.section-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 20px 0;
+}
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+.news-card {
+  background: #ffffff;
+  border: 1px solid #eaeaea;
+  padding: 32px;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+  display: flex;
+  flex-direction: column;
+}
+.news-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.08);
+  border-color: #ffd0c0;
+}
+.news-icon {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  background: #fff5f0;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+}
+.news-card-title {
+  margin: 0 0 12px 0;
+  font-size: 1.2rem;
+  color: #222;
+}
+.news-card-desc {
+  margin: 0 0 24px 0;
+  color: #666;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  flex-grow: 1;
+}
+.btn-action {
+  align-self: flex-start;
+  padding: 10px 24px;
+  background: #fff;
+  color: #FF5A1F;
+  border: 1px solid #FF5A1F;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.btn-action:hover {
+  background: #FF5A1F;
+  color: #fff;
 }
 footer.site-footer {
   border-top: 1px solid var(--border);

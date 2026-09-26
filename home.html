@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>หน้าหลัก – กินอะไรดี</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- ไฟล์สไตล์หลัก -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  
+  <!-- โครงสร้างหลัก (บังคับให้มีเพื่อให้แถบซ้ายกับเนื้อหาอยู่ข้างกัน) -->
+  <div class="app-layout">
+    
+    <!-- พื้นที่เรนเดอร์แถบซ้าย (Sidebar) -->
+    <aside class="app-sidebar" id="app-sidebar"></aside>
+    <div class="app-sidebar-overlay" id="app-sidebar-overlay"></div>
+
+    <!-- พื้นที่เนื้อหาหลัก (ปรับ HTML ให้คลีนและใช้คลาสจาก CSS แทน) -->
+    <main class="main-content">
+      <div class="home-container">
+        
+        <header class="home-header">
+          <h1 class="home-title">🏠 หน้าหลัก</h1>
+          <p class="home-subtitle">สิ่งที่น่าสนใจและข่าวสารอัปเดตล่าสุด</p>
+        </header>
+
+        <div class="hero-banner">
+          <h2 class="hero-title">🎉 ยินดีต้อนรับสู่ "กินอะไรดี" เวอร์ชันใหม่!</h2>
+          <p class="hero-desc">
+            อัปเดตระบบโปรไฟล์ใหม่ล่าสุด ให้คุณสามารถอัปโหลดและครอบรูปภาพโปรไฟล์ได้อย่างอิสระ 
+            พร้อมระบบบันทึกเมนูโปรดที่ฉลาดกว่าเดิม ลองเข้าไปตั้งค่าได้ที่หน้าโปรไฟล์เลย!
+          </p>
+        </div>
+
+        <h2 class="section-title">มีอะไรใหม่สัปดาห์นี้</h2>
+        
+        <div class="news-grid">
+          
+          <div class="news-card">
+            <div class="news-icon">🍲</div>
+            <h3 class="news-card-title">เพิ่ม 20 เมนูใหม่</h3>
+            <p class="news-card-desc">
+              คลังอาหารอัปเดตใหม่ ครอบคลุมทั้งอาหารคลีน คีโต และอาหารสำหรับผู้แพ้กลูเตน ระบบจะคัดกรองให้อัตโนมัติตามโปรไฟล์ของคุณ
+            </p>
+            <a href="search.html" class="btn-action">เริ่มค้นหาเลย</a>
+          </div>
+
+          <div class="news-card">
+            <div class="news-icon">⭐</div>
+            <h3 class="news-card-title">ระบบให้คะแนนความอร่อย</h3>
+            <p class="news-card-desc">
+              คุณสามารถให้ดาวเมนูที่เคยทานแล้ว เพื่อเก็บเป็นสถิติส่วนตัว และช่วยให้ระบบแนะนำอาหารมื้อถัดไปได้ถูกใจคุณมากยิ่งขึ้น
+            </p>
+            <a href="profile.html" class="btn-action">ดูเมนูที่ให้คะแนน</a>
+          </div>
+
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Scripts ที่จำเป็นสำหรับระบบ -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-client.js"></script> <!-- เพิ่มไฟล์นี้ -->
+  <script src="js/db.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/guard.js"></script> <!-- เพิ่มไฟล์นี้ เพื่อใช้เช็คการเข้าสู่ระบบ -->
+  <script src="js/ui.js"></script>
+  <script src="js/home.js"></script>
+</body>
+</html>
