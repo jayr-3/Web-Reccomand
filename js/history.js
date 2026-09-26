@@ -61,13 +61,22 @@
       return;
     }
     listEl.innerHTML = "";
+    const defaultImage = "https://placehold.co/150x150?text=No+Image";
+
     favorites.forEach((fav) => {
       const match = toMatchShape(fav);
       if (!match.menu) return;
+      
+      const imageUrl = match.menu.image_url && match.menu.image_url.trim() !== "" ? match.menu.image_url : defaultImage;
       const row = document.createElement("div");
       row.className = "result-row";
-      row.style.gridTemplateColumns = "1fr auto";
+      // ปรับ Grid ให้รองรับรูปภาพด้านหน้า (รูปภาพ | ข้อความ | ลูกศร) ไม่มีวงแหวนเปอร์เซ็นต์
+      row.style.gridTemplateColumns = "60px 1fr auto";
+      row.style.gap = "12px";
+      row.style.alignItems = "center";
+      
       row.innerHTML = `
+        <img src="${imageUrl}" alt="${match.menu.name}" onerror="this.src='${defaultImage}'" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;" />
         <div>
           <div class="result-title">${match.menu.name}</div>
           <div class="result-tags">

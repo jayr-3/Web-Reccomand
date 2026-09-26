@@ -813,7 +813,42 @@ button { font-family: inherit; }
   padding: 0; margin: -1px; overflow: hidden;
   clip: rect(0,0,0,0); white-space: nowrap; border: 0;
 }
+/* จัดสไตล์รูปภาพการ์ดเมนู */
+.menu-card-media,
+.history-thumb,
+.recommend-image-wrapper {
+  width: 100%;
+  height: 180px; /* ปรับความสูงตามต้องการ */
+  overflow: hidden;
+  border-radius: 8px 8px 0 0;
+  background-color: #f3f4f6;
+}
+.menu-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* ตัดภาพให้อยู่ในอัตราส่วนพอดี */
+  object-position: center;
+  transition: transform 0.3s ease;
+}
 
+.menu-card:hover .menu-card-img,
+.recommend-card:hover .menu-card-img {
+  transform: scale(1.05); /* เอฟเฟกต์ซูมเล็กน้อยเมื่อนำเมาส์ไปชี้ */
+}
+
+/* ปรับแต่ง Thumbnail สำหรับหน้า History (กรณีแสดงเป็นแนวนอน) */
+.history-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.history-thumb {
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+  border-radius: 8px;
+}
 footer.site-footer {
   border-top: 1px solid var(--border);
   padding: 28px 0;

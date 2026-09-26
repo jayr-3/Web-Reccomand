@@ -47,10 +47,19 @@
         : `พบ ${results.length} เมนูที่ตรงกับวัตถุดิบของคุณ`;
 
     listEl.innerHTML = "";
+    const defaultImage = "https://placehold.co/150x150?text=No+Image";
+
     results.forEach((match) => {
+      const imageUrl = match.menu.image_url && match.menu.image_url.trim() !== "" ? match.menu.image_url : defaultImage;
       const row = document.createElement("div");
       row.className = "result-row";
+      // ปรับ Grid ให้รองรับรูปภาพด้านหน้า (รูปภาพ | วงแหวนเปอร์เซ็นต์ | ข้อความ | ลูกศร)
+      row.style.gridTemplateColumns = "60px auto 1fr auto"; 
+      row.style.gap = "12px";
+      row.style.alignItems = "center";
+      
       row.innerHTML = `
+        <img src="${imageUrl}" alt="${match.menu.name}" onerror="this.src='${defaultImage}'" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;" />
         <div class="match-ring" style="--pct:${match.pct}" data-pct="${match.pct}"></div>
         <div>
           <div class="result-title">${match.menu.name}</div>
