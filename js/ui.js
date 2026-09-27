@@ -49,13 +49,17 @@ function renderAppShell({ activePage, user, profile }) {
         <span>แผงควบคุมแอดมิน</span>
       </a>`
       : "";
+  // เช็กว่ามี profile และมี avatar_url หรือไม่ (ปรับชื่อตัวแปร avatar_url ตามที่คุณตั้งไว้ในฐานข้อมูล)
+  const avatarContent = (profile && profile.avatar_url) 
+    ? `<img src="${profile.avatar_url}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">` 
+    : initial;
 
   const sidebarEl = document.getElementById("app-sidebar");
   if (sidebarEl) {
     sidebarEl.innerHTML = `
       <a href="recommend.html" class="sidebar-brand"><span class="brand-mark">🍲</span> กินอะไรดี</a>
       <div class="sidebar-user">
-        <div class="avatar avatar-sidebar">${initial}</div>
+        <div class="avatar avatar-sidebar">${avatarContent}</div>
         <div class="sidebar-user-info">
           <div class="sidebar-user-name">${displayName}</div>
           <span class="role-badge role-badge-${role}">${role === "admin" ? "แอดมิน" : "สมาชิก"}</span>

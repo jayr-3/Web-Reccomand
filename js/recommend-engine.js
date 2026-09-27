@@ -23,7 +23,27 @@ const RecommendEngine = (() => {
   function ingredientMatches(userIngredient, menuIngredientName) {
     const u = normalize(userIngredient);
     const m = normalize(menuIngredientName);
+    
     if (!u || !m) return false;
+
+    // --- เพิ่มเงื่อนไขยกเว้นคำ (Exclusion Logic) ---
+    // กรณีผู้ใช้ค้นหาคำว่า "ไก่"
+    if (u === 'ไก่') {
+      // ดักไม่ให้ตรงกับ ไข่, รสดี, ซุป
+      if (m.includes('ไข่') || m.includes('รสดี') || m.includes('ซุป')) {
+        return false;
+      }
+    }
+
+    // กรณีผู้ใช้ค้นหาคำว่า "หมู"
+    if (u === 'หมู') {
+      // ดักไม่ให้ตรงกับ รสดี, ซุป
+      if (m.includes('รสดี') || m.includes('ซุป')) {
+        return false;
+      }
+    }
+    // ---------------------------------------------
+
     return m.includes(u) || u.includes(m);
   }
 
@@ -33,14 +53,6 @@ const RecommendEngine = (() => {
     return menus.filter((menu) => !menu.allergenTags.some((tag) => selectedAllergenIds.includes(tag)));
   }
 
-  /**
-   * ขั้นตอนที่ 2: ให้คะแนนความเข้ากันได้ของวัตถุดิบ + personalization (ถ้ามี)
-   * @param {Array} menus เมนูที่ผ่านการคัดกรองสุขภาพแล้ว
-   * @param {Array<string>} availableIngredients วัตถุดิบที่ผู้ใช้มี
-   * @param {Object} [options]
-   * @param {Object<string, number>} [options.likedIngredientFreq] ความถี่วัตถุดิบในเมนูที่สมาชิกเคยถูกใจ/ให้คะแนนดี
-   * @param {Set<number>} [options.likedMenuIds] เมนูที่เคยถูกใจมาก่อน (กันไม่ให้คะแนน personalization เพี้ยนกับเมนูเดิม)
-   */
   /**
    * ขั้นตอนที่ 2: ให้คะแนนความเข้ากันได้ของวัตถุดิบ + personalization (ถ้ามี)
    */
