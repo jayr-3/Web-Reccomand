@@ -6,42 +6,24 @@
   <title>หน้าหลัก – กินอะไรดี</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css" />
   <!-- ไฟล์สไตล์หลัก -->
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body data-page="home">
   
-  <!-- โครงสร้างหลัก (บังคับให้มีเพื่อให้แถบซ้ายกับเนื้อหาอยู่ข้างกัน) -->
-  <div class="app-layout">
-    
-    <!-- พื้นที่เรนเดอร์แถบซ้าย (Sidebar) -->
-    <aside class="app-sidebar" id="app-sidebar"></aside>
-    <div class="app-sidebar-overlay" id="app-sidebar-overlay"></div>
-    
-    <div class="app-shell">
+  <!-- โครงสร้างหลัก (app-shell) -->
+  <div class="app-shell">
 
-    <!-- 1. ส่วน Sidebar และ Overlay (ปล่อยว่างไว้ให้ ui.js เติมโค้ด) -->
+    <!-- 1. ส่วน Sidebar และ Overlay (ui.js จะเป็นตัวเติมเนื้อหา) -->
     <aside class="app-sidebar" id="app-sidebar"></aside>
     <div class="app-sidebar-overlay" id="app-sidebar-overlay"></div>
 
-    <!-- 2. แถบเมนูด้านบนสำหรับมือถือ (ต้องมีส่วนนี้เพื่อกดปุ่ม ☰) -->
-    <div class="mobile-topbar">
-      <button class="mobile-topbar-toggle" aria-label="เปิดเมนู">☰</button>
-      <a href="home.html" class="brand"><span class="brand-mark">🍲</span> กินอะไรดี</a>
-    </div>
+    <!-- 2. แถบเมนูด้านบนสำหรับมือถือ (ui.js จะสร้างปุ่ม ☰ และโปรไฟล์ให้) -->
+    <div class="mobile-topbar"></div>
 
     <!-- 3. ส่วนเนื้อหาหลัก -->
     <main class="app-main">
-      <div class="app-main-inner">
-        <!-- เนื้อหาหน้าหลัก -->
-      </div>
-    </main>
-
-  </div>
-    <!-- พื้นที่เนื้อหาหลัก (ปรับ HTML ให้คลีนและใช้คลาสจาก CSS แทน) -->
-    <main class="main-content">
-      <div class="home-container">
+      <div class="app-main-inner home-container">
         
         <header class="home-header">
           <h1 class="home-title">🏠 หน้าหลัก</h1>
@@ -59,7 +41,6 @@
         <h2 class="section-title">มีอะไรใหม่สัปดาห์นี้</h2>
         
         <div class="news-grid">
-          
           <div class="news-card">
             <div class="news-icon">🍲</div>
             <h3 class="news-card-title">เพิ่ม 20 เมนูใหม่</h3>
@@ -77,19 +58,19 @@
             </p>
             <a href="profile.html" class="btn-action">ดูเมนูที่ให้คะแนน</a>
           </div>
-
         </div>
 
       </div>
     </main>
+
   </div>
 
   <!-- Scripts ที่จำเป็นสำหรับระบบ -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="js/supabase-client.js"></script> <!-- เพิ่มไฟล์นี้ -->
+  <script src="js/supabase-client.js"></script> 
   <script src="js/db.js"></script>
   <script src="js/data.js"></script>
-  <script src="js/guard.js"></script> <!-- เพิ่มไฟล์นี้ เพื่อใช้เช็คการเข้าสู่ระบบ -->
+  <script src="js/guard.js"></script> 
   <script src="js/ui.js"></script>
   <script src="js/home.js"></script>
 </body>
