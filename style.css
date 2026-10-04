@@ -1065,3 +1065,95 @@ footer.site-footer {
     z-index: 100;
   }
 }
+/* ========================================== */
+/* จัดระเบียบหน้าจอมือถือ (Responsive Mobile) */
+/* ========================================== */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+@media (max-width: 768px) {
+  /* จัดการ Layout หลักไม่ให้ล้นจอ */
+  .app-shell {
+    display: block !important;
+    width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  .app-main {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    padding: 16px !important;
+    box-sizing: border-box;
+  }
+
+  .app-main-inner, 
+  .banner, 
+  .card, 
+  .hero-card {
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  /* แถบเมนู Topbar ด้านบน */
+  .mobile-topbar {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: #ffffff;
+    border-bottom: 1px solid #eaeaea;
+    position: sticky;
+    top: 0;
+    z-index: 99;
+    width: 100%;
+  }
+
+  .mobile-topbar-toggle {
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 1.2rem;
+    cursor: pointer;
+  }
+
+  /* ตั้งค่า Sidebar บนมือถือ (ซ่อนไว้นอกจอทางซ้าย) */
+  .app-sidebar {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 270px !important;
+    height: 100vh;
+    background: #ffffff;
+    z-index: 9999 !important;
+    transform: translateX(-100%) !important;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 4px 0 16px rgba(0,0,0,0.15);
+  }
+
+  /* เมื่อเปิดเมนูสามขีด ให้สไลด์ Sidebar ออกมา */
+  body.sidebar-open .app-sidebar {
+    transform: translateX(0) !important;
+  }
+
+  /* ฉากหลังสีทึบเมื่อเปิด Sidebar */
+  .app-sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9998;
+  }
+
+  body.sidebar-open .app-sidebar-overlay {
+    display: block !important;
+  }
+}
