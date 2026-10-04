@@ -18,7 +18,27 @@
     <!-- พื้นที่เรนเดอร์แถบซ้าย (Sidebar) -->
     <aside class="app-sidebar" id="app-sidebar"></aside>
     <div class="app-sidebar-overlay" id="app-sidebar-overlay"></div>
+    
+    <div class="app-shell">
 
+    <!-- 1. ส่วน Sidebar และ Overlay (ปล่อยว่างไว้ให้ ui.js เติมโค้ด) -->
+    <aside class="app-sidebar" id="app-sidebar"></aside>
+    <div class="app-sidebar-overlay" id="app-sidebar-overlay"></div>
+
+    <!-- 2. แถบเมนูด้านบนสำหรับมือถือ (ต้องมีส่วนนี้เพื่อกดปุ่ม ☰) -->
+    <div class="mobile-topbar">
+      <button class="mobile-topbar-toggle" aria-label="เปิดเมนู">☰</button>
+      <a href="home.html" class="brand"><span class="brand-mark">🍲</span> กินอะไรดี</a>
+    </div>
+
+    <!-- 3. ส่วนเนื้อหาหลัก -->
+    <main class="app-main">
+      <div class="app-main-inner">
+        <!-- เนื้อหาหน้าหลัก -->
+      </div>
+    </main>
+
+  </div>
     <!-- พื้นที่เนื้อหาหลัก (ปรับ HTML ให้คลีนและใช้คลาสจาก CSS แทน) -->
     <main class="main-content">
       <div class="home-container">
