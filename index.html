@@ -41,42 +41,46 @@
         </div>
       </div>
 
-      <div class="flow-figure">
-        <h3 style="margin-bottom:16px">ระบบทำงานอย่างไร</h3>
-        <ol class="flow-steps">
-          <li>
-            <span class="n">1</span>
-            <div><strong>ใส่ข้อมูล</strong><span>เลือกวัตถุดิบที่มี และแจ้งอาการแพ้ (ไม่บังคับ)</span></div>
-          </li>
-          <li>
-            <span class="n">2</span>
-            <div><strong>คัดกรองความปลอดภัย</strong><span>ตัดเมนูที่มีส่วนผสมต้องห้ามออกก่อนเป็นลำดับแรก</span></div>
-          </li>
-          <li>
-            <span class="n">3</span>
-            <div><strong>จับคู่วัตถุดิบ</strong><span>ให้คะแนนเมนูที่เหลือตามสัดส่วนวัตถุดิบที่มีอยู่จริง</span></div>
-          </li>
-          <li>
-            <span class="n">4</span>
-            <div><strong>รับคำแนะนำ</strong><span>ดูรายละเอียด ขั้นตอนทำ และเลือกเมนูที่ใช่สำหรับมื้อนี้</span></div>
-          </li>
-        </ol>
+      <div class="flow-figure menu-carousel" id="menu-carousel">
+        <h3 style="margin-bottom:16px">เมนูยอดนิยมมากมายให้คุณได้เลือก</h3>
+        <div class="carousel-viewport">
+          <div class="carousel-track" id="carousel-track">
+            <div class="carousel-slide skeleton"></div>
+          </div>
+        </div>
+        <div class="carousel-dots" id="carousel-dots"></div>
       </div>
     </section>
 
-    <section class="section container" id="menu-preview-section">
+    <section class="section container" id="steps-section">
       <div class="text-center" style="margin-bottom:28px">
-        <h2>ตัวอย่างเมนูในระบบ</h2>
-        <p class="text-center" style="margin-inline:auto">คัดมาจากเมนูอาหารเย็นกว่า 45 รายการที่พร้อมให้ระบบแนะนำทันที</p>
+        <h2>Step การใช้งาน</h2>
+        <p class="text-center" style="margin-inline:auto">4 ขั้นตอนง่าย ๆ จากวัตถุดิบที่มีอยู่ สู่เมนูที่ใช่สำหรับมื้อนี้</p>
       </div>
-      <div id="menu-preview-grid" class="menu-preview-grid">
-        <div class="menu-preview-card skeleton"></div>
-        <div class="menu-preview-card skeleton"></div>
-        <div class="menu-preview-card skeleton"></div>
-        <div class="menu-preview-card skeleton"></div>
+      <div class="steps-grid">
+        <div class="step-card-lg">
+          <span class="step-num">1</span>
+          <h3>ใส่ข้อมูล</h3>
+          <p>เลือกวัตถุดิบที่มี และแจ้งอาการแพ้ (ไม่บังคับ)</p>
+        </div>
+        <div class="step-card-lg">
+          <span class="step-num">2</span>
+          <h3>คัดกรองความปลอดภัย</h3>
+          <p>ตัดเมนูที่มีส่วนผสมต้องห้ามออกก่อนเป็นลำดับแรก</p>
+        </div>
+        <div class="step-card-lg">
+          <span class="step-num">3</span>
+          <h3>จับคู่วัตถุดิบ</h3>
+          <p>ให้คะแนนเมนูที่เหลือตามสัดส่วนวัตถุดิบที่มีอยู่จริง</p>
+        </div>
+        <div class="step-card-lg">
+          <span class="step-num">4</span>
+          <h3>รับคำแนะนำ</h3>
+          <p>ดูรายละเอียด ขั้นตอนทำ และเลือกเมนูที่ใช่สำหรับมื้อนี้</p>
+        </div>
       </div>
-      <div class="text-center" style="margin-top:24px">
-        <a href="guest.html" class="btn btn-primary">ดูเมนูทั้งหมด ลองเลยไม่ต้องสมัคร</a>
+      <div class="text-center" style="margin-top:28px">
+        <a href="guest.html" class="btn btn-primary">เริ่มใช้งานตอนนี้ ไม่ต้องสมัคร</a>
       </div>
     </section>
 
@@ -136,37 +140,64 @@
   <script>
     initNavbar();
 
-    // แสดงตัวอย่างเมนูจริงจากฐานข้อมูล (อ่านสาธารณะได้) เพื่อให้หน้าแรกน่าสนใจ
-    // และจูงใจให้สมัครสมาชิก — ถ้าเมนูไหนแอดมินยังไม่ได้ตั้งรูป ก็ใช้ภาพพื้นหลังสีแทน
-    (async function loadMenuPreview() {
-      const grid = document.getElementById("menu-preview-grid");
-      if (!grid || !isSupabaseConfigured) return;
+    // แสดงเมนูยอดนิยมจริงจากฐานข้อมูล (อ่านสาธารณะได้) เป็นสไลด์เลื่อนอัตโนมัติ
+    // เพื่อให้หน้าแรกน่าสนใจและจูงใจให้สมัครสมาชิก — ถ้าเมนูไหนแอดมินยังไม่ได้ตั้งรูป
+    // ก็ใช้ภาพพื้นหลังไล่เฉดสีแทนไม่ให้รูปพัง
+    (async function loadMenuCarousel() {
+      const track = document.getElementById("carousel-track");
+      const dotsEl = document.getElementById("carousel-dots");
+      const carousel = document.getElementById("menu-carousel");
+      if (!track || !isSupabaseConfigured) return;
+
       try {
         ensureSupabase();
         const { data, error } = await supa
           .from("menus")
           .select("id, name, image_url")
           .order("id")
-          .limit(4);
+          .limit(8);
         if (error) throw error;
         if (!data || data.length === 0) return;
 
-        grid.innerHTML = data
+        track.innerHTML = data
           .map((menu, idx) => {
             const hue = (idx * 47) % 360;
             const media = menu.image_url
               ? `<img src="${menu.image_url}" alt="${menu.name}" loading="lazy" />`
               : `<div class="menu-preview-fallback" style="background: linear-gradient(135deg, hsl(${hue},70%,55%), hsl(${hue + 30},70%,45%));">🍲</div>`;
             return `
-              <a href="guest.html" class="menu-preview-card">
-                <div class="menu-preview-media">${media}</div>
-                <div class="menu-preview-name">${menu.name}</div>
+              <a href="guest.html" class="carousel-slide">
+                ${media}
+                <div class="carousel-caption">${menu.name}</div>
               </a>`;
           })
           .join("");
+
+        dotsEl.innerHTML = data.map((_, idx) => `<button type="button" class="carousel-dot${idx === 0 ? " is-active" : ""}" aria-label="สไลด์ที่ ${idx + 1}"></button>`).join("");
+
+        let current = 0;
+        const slideCount = data.length;
+        const dots = Array.from(dotsEl.children);
+
+        function goTo(idx) {
+          current = (idx + slideCount) % slideCount;
+          track.style.transform = `translateX(-${current * 100}%)`;
+          dots.forEach((d, i) => d.classList.toggle("is-active", i === current));
+        }
+
+        dots.forEach((d, i) => d.addEventListener("click", () => { goTo(i); resetAutoplay(); }));
+
+        let timer = null;
+        function resetAutoplay() {
+          if (timer) clearInterval(timer);
+          timer = setInterval(() => goTo(current + 1), 4000);
+        }
+        resetAutoplay();
+        carousel?.addEventListener("mouseenter", () => timer && clearInterval(timer));
+        carousel?.addEventListener("mouseleave", resetAutoplay);
       } catch (err) {
-        console.warn("[index] โหลดตัวอย่างเมนูไม่สำเร็จ:", err.message || err);
-        grid.closest("section")?.remove();
+        console.warn("[index] โหลดเมนูยอดนิยมไม่สำเร็จ:", err.message || err);
+        carousel?.remove();
       }
     })();
   </script>
