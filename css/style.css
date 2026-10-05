@@ -135,15 +135,6 @@ button { font-family: inherit; }
 
 .section { padding: 56px 0; }
 .section-tight { padding: 32px 0; }
-/* =========================================
-   Home Page Styles (หน้าหลัก)
-========================================= */
-.home-container {
-  max-width: 1000px;
-  margin-left: 260px;
-  padding: 32px 24px 40px 24px;
-  font-family: var(--font-body); /* ดึงฟอนต์เนื้อหาของระบบ */
-}
 
 /* หัวข้อทั้งหมดในหน้า Home ให้ใช้ฟอนต์หัวข้อของระบบ */
 .home-title,
