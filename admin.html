@@ -16,7 +16,7 @@
 
     <div class="mobile-topbar">
       <button class="mobile-topbar-toggle" aria-label="เปิดเมนู">☰</button>
-      <a href="dashboard.html" class="brand"><span class="brand-mark">🍲</span> กินอะไรดี</a>
+      <a href="home.html" class="brand"><span class="brand-mark">🍲</span> กินอะไรดี</a>
     </div>
 
     <main class="app-main">
@@ -44,8 +44,16 @@
             <form id="menu-form">
               <input type="hidden" id="menu-id" />
               <div class="field">
-                <label for="menu-image">ลิงก์รูปภาพ (URL)</label>
-                <input type="url" id="menu-image" class="input" placeholder="วางลิงก์รูปภาพที่นี่" />
+                <label>รูปภาพเมนู</label>
+                <div id="menu-image-preview-wrap" style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+                  <img id="menu-image-preview" src="" alt="" style="width:64px; height:64px; object-fit:cover; border-radius:8px; background:#F7F7F8; display:none;" />
+                  <span id="menu-image-preview-empty" style="color:#999; font-size:0.85rem;">ยังไม่มีรูป</span>
+                </div>
+                <label for="menu-image-file" class="btn btn-outline btn-sm" style="cursor:pointer; display:inline-block; margin-bottom:8px;">
+                  อัปโหลดรูปจากเครื่อง
+                </label>
+                <input type="file" id="menu-image-file" accept="image/jpeg, image/png, image/webp" style="display:none;" />
+                <input type="url" id="menu-image" class="input" placeholder="หรือวางลิงก์รูปภาพที่นี่" />
               </div>
               <div class="field">
                 <label for="menu-name">ชื่อเมนู</label>

@@ -39,12 +39,55 @@
   const menuFormCancel = document.getElementById("menu-form-cancel");
   let menus = [];
 
+  // ---------- พรีวิว + อัปโหลดรูปภาพเมนู ----------
+  const menuImageFileInput = document.getElementById("menu-image-file");
+  const menuImagePreview = document.getElementById("menu-image-preview");
+  const menuImagePreviewEmpty = document.getElementById("menu-image-preview-empty");
+
+  function setMenuImagePreview(url) {
+    if (url) {
+      menuImagePreview.src = url;
+      menuImagePreview.style.display = "block";
+      menuImagePreviewEmpty.style.display = "none";
+    } else {
+      menuImagePreview.src = "";
+      menuImagePreview.style.display = "none";
+      menuImagePreviewEmpty.style.display = "inline";
+    }
+  }
+
+  menuImageFileInput?.addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
+      Toast.show("กรุณาเลือกไฟล์รูปภาพชนิด JPEG, PNG หรือ WEBP", "danger");
+      e.target.value = "";
+      return;
+    }
+    const menuIdVal = document.getElementById("menu-id").value;
+    const idForPath = menuIdVal || "new";
+    try {
+      Toast.show("กำลังอัปโหลดรูป...", "default", 1500);
+      const url = await DB.admin.uploadMenuImage(idForPath, file);
+      document.getElementById("menu-image").value = url;
+      setMenuImagePreview(url);
+      Toast.show("อัปโหลดรูปสำเร็จ", "success");
+    } catch (err) {
+      Toast.show(err.message || "อัปโหลดรูปไม่สำเร็จ", "danger");
+    } finally {
+      e.target.value = "";
+    }
+  });
+
+  document.getElementById("menu-image").addEventListener("input", (e) => setMenuImagePreview(e.target.value.trim()));
+
   function resetMenuForm() {
     menuForm.reset();
     document.getElementById("menu-id").value = "";
     // [เพิ่ม] ล้างค่าช่องรูปภาพ
     const imgInput = document.getElementById("menu-image");
     if (imgInput) imgInput.value = "";
+    setMenuImagePreview("");
 
     menuFormTitle.textContent = "เพิ่มเมนูใหม่";
     menuFormCancel.classList.add("hidden");
@@ -56,6 +99,7 @@
     // [เพิ่ม] ดึงลิงก์รูปภาพเดิมมาใส่ในช่อง input
     const imgInput = document.getElementById("menu-image");
     if (imgInput) imgInput.value = menu.image_url || "";
+    setMenuImagePreview(menu.image_url || "");
 
     document.getElementById("menu-ingredients").value = menu.ingredients.map((i) => i.raw).join("\n");
     document.getElementById("menu-steps").value = menu.steps.join("\n");

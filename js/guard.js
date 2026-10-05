@@ -23,7 +23,7 @@ async function requireAuth() {
 
 /**
  * เรียกในหน้าที่ใช้ได้เฉพาะแอดมิน (เช่น admin.html) — ต้องล็อกอินก่อน
- * และมี profiles.role = 'admin' เท่านั้น ถ้าไม่ใช่จะเด้งกลับ dashboard.html
+ * และมี profiles.role = 'admin' เท่านั้น ถ้าไม่ใช่จะเด้งกลับ home.html
  * คืนค่า { user, profile } เมื่อผ่านการตรวจสอบ
  */
 async function requireAdmin() {
@@ -34,11 +34,11 @@ async function requireAdmin() {
     profile = await DB.getProfile(user.id);
   } catch (err) {
     console.error("[guard] โหลดโปรไฟล์เพื่อตรวจสิทธิ์แอดมินไม่สำเร็จ:", err);
-    window.location.href = "dashboard.html";
+    window.location.href = "home.html";
     return null;
   }
   if (!profile || profile.role !== "admin") {
-    window.location.href = "dashboard.html";
+    window.location.href = "home.html";
     return null;
   }
   return { user, profile };

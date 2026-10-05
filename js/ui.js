@@ -21,8 +21,9 @@ function renderAppShell({ activePage, user, profile }) {
   const role = profile?.role === "admin" ? "admin" : "member";
   const displayName = profile?.name || user?.email || "";
   const initial = displayName.trim().charAt(0).toUpperCase() || "?";
+  const avatarUrl = profile?.avatar_url || "";
 
-  // รายการเมนูหลัก (ลบแดชบอร์ดออกแล้ว)
+  // 1. เรนเดอร์เมนู Sidebar ด้านซ้าย
   const navItems = [
     { page: "home", href: "home.html", icon: "🏠", label: "หน้าหลัก" },
     { page: "recommend", href: "recommend.html", icon: "🔎", label: "ค้นหาเมนู" },
@@ -49,9 +50,9 @@ function renderAppShell({ activePage, user, profile }) {
         <span>แผงควบคุมแอดมิน</span>
       </a>`
       : "";
-  // เช็กว่ามี profile และมี avatar_url หรือไม่ (ปรับชื่อตัวแปร avatar_url ตามที่คุณตั้งไว้ในฐานข้อมูล)
-  const avatarContent = (profile && profile.avatar_url) 
-    ? `<img src="${profile.avatar_url}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">` 
+
+  const avatarContent = avatarUrl 
+    ? `<img src="${avatarUrl}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">` 
     : initial;
 
   const sidebarEl = document.getElementById("app-sidebar");
@@ -70,16 +71,39 @@ function renderAppShell({ activePage, user, profile }) {
     `;
   }
 
+  // 2. เรนเดอร์แถบด้านบนสำหรับมือถือ (แสดงปุ่มสามขีด โลโก้ และสถานะผู้ใช้มุมบนขวา)
+  const mobileTopbar = document.querySelector(".mobile-topbar");
+  if (mobileTopbar) {
+    const userBadgeIcon = avatarUrl
+      ? `<img src="${avatarUrl}" alt="User" style="width:26px; height:26px; border-radius:50%; object-fit:cover;">`
+      : `<span style="width:26px; height:26px; border-radius:50%; background:#FF5A1F; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold;">${initial}</span>`;
+
+    mobileTopbar.innerHTML = `
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button type="button" class="mobile-topbar-toggle" aria-label="เปิดเมนู">☰</button>
+        <a href="home.html" class="brand" style="text-decoration:none; font-weight:bold; color:inherit;"><span class="brand-mark">🍲</span> กินอะไรดี</a>
+      </div>
+      <div class="mobile-user-status" style="display:flex; align-items:center; gap:6px; font-size:0.85rem; font-weight:500; color:#333;">
+        ${userBadgeIcon}
+        <span style="max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${displayName}</span>
+      </div>
+    `;
+  }
+
   document.getElementById("app-shell-logout")?.addEventListener("click", async () => {
     await DB.signOut();
     window.location.href = "index.html";
   });
 
-  // mobile: เปิด/ปิด sidebar แบบ off-canvas
+  // 3. ผูกคำสั่งเปิด/ปิด Sidebar เมื่อกดปุ่มสามขีดหรือพื้นหลังฉากหลัง (Overlay)
   const toggle = document.querySelector(".mobile-topbar-toggle");
   const overlay = document.getElementById("app-sidebar-overlay");
   const closeSidebar = () => document.body.classList.remove("sidebar-open");
-  toggle?.addEventListener("click", () => document.body.classList.toggle("sidebar-open"));
+
+  toggle?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    document.body.classList.toggle("sidebar-open");
+  });
   overlay?.addEventListener("click", closeSidebar);
   sidebarEl?.querySelectorAll(".sidebar-link").forEach((a) => a.addEventListener("click", closeSidebar));
 }

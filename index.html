@@ -64,6 +64,22 @@
       </div>
     </section>
 
+    <section class="section container" id="menu-preview-section">
+      <div class="text-center" style="margin-bottom:28px">
+        <h2>ตัวอย่างเมนูในระบบ</h2>
+        <p class="text-center" style="margin-inline:auto">คัดมาจากเมนูอาหารเย็นกว่า 45 รายการที่พร้อมให้ระบบแนะนำทันที</p>
+      </div>
+      <div id="menu-preview-grid" class="menu-preview-grid">
+        <div class="menu-preview-card skeleton"></div>
+        <div class="menu-preview-card skeleton"></div>
+        <div class="menu-preview-card skeleton"></div>
+        <div class="menu-preview-card skeleton"></div>
+      </div>
+      <div class="text-center" style="margin-top:24px">
+        <a href="guest.html" class="btn btn-primary">ดูเมนูทั้งหมด ลองเลยไม่ต้องสมัคร</a>
+      </div>
+    </section>
+
     <section class="section container">
       <div class="text-center" style="margin-bottom:28px">
         <h2>เลือกวิธีใช้งานที่เหมาะกับคุณ</h2>
@@ -114,7 +130,45 @@
     โปรเจกต์นี้เป็นส่วนหนึ่งของวิชาปัญหาพิเศษ หลักสูตรวิทยาการคอมพิวเตอร์ · ข้อมูลเมนูอ้างอิงจาก Ajinomoto TH
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="js/supabase-client.js"></script>
   <script src="js/ui.js"></script>
-  <script>initNavbar();</script>
+  <script>
+    initNavbar();
+
+    // แสดงตัวอย่างเมนูจริงจากฐานข้อมูล (อ่านสาธารณะได้) เพื่อให้หน้าแรกน่าสนใจ
+    // และจูงใจให้สมัครสมาชิก — ถ้าเมนูไหนแอดมินยังไม่ได้ตั้งรูป ก็ใช้ภาพพื้นหลังสีแทน
+    (async function loadMenuPreview() {
+      const grid = document.getElementById("menu-preview-grid");
+      if (!grid || !isSupabaseConfigured) return;
+      try {
+        ensureSupabase();
+        const { data, error } = await supa
+          .from("menus")
+          .select("id, name, image_url")
+          .order("id")
+          .limit(4);
+        if (error) throw error;
+        if (!data || data.length === 0) return;
+
+        grid.innerHTML = data
+          .map((menu, idx) => {
+            const hue = (idx * 47) % 360;
+            const media = menu.image_url
+              ? `<img src="${menu.image_url}" alt="${menu.name}" loading="lazy" />`
+              : `<div class="menu-preview-fallback" style="background: linear-gradient(135deg, hsl(${hue},70%,55%), hsl(${hue + 30},70%,45%));">🍲</div>`;
+            return `
+              <a href="guest.html" class="menu-preview-card">
+                <div class="menu-preview-media">${media}</div>
+                <div class="menu-preview-name">${menu.name}</div>
+              </a>`;
+          })
+          .join("");
+      } catch (err) {
+        console.warn("[index] โหลดตัวอย่างเมนูไม่สำเร็จ:", err.message || err);
+        grid.closest("section")?.remove();
+      }
+    })();
+  </script>
 </body>
 </html>

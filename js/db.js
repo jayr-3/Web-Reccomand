@@ -160,6 +160,26 @@ const DB = (() => {
     writeLS(LS_USERS, users);
   }
 
+  // ---------- avatar (Supabase Storage bucket "avatars") ----------
+  // อัปโหลดไฟล์รูปโปรไฟล์จริงขึ้น Storage แล้วบันทึกลิงก์ลง profiles.avatar_url
+  // พาธไฟล์ต้องขึ้นต้นด้วย {user_id}/ เสมอ ตาม RLS policy "avatars_owner_write"
+  async function uploadAvatar(userId, file) {
+    if (!isSupabaseConfigured) {
+      throw new Error("ฟีเจอร์อัปโหลดรูปโปรไฟล์ใช้ได้เฉพาะเมื่อเชื่อมต่อ Supabase แล้ว");
+    }
+    ensureSupabase();
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+    const path = `${userId}/avatar_${Date.now()}.${ext}`;
+    const { error: uploadError } = await supa.storage
+      .from("avatars")
+      .upload(path, file, { upsert: true, contentType: file.type || "image/jpeg" });
+    if (uploadError) throw uploadError;
+    const { data } = supa.storage.from("avatars").getPublicUrl(path);
+    const avatarUrl = data.publicUrl;
+    await updateProfile(userId, { avatar_url: avatarUrl });
+    return avatarUrl;
+  }
+
   // ---------- favorites / ratings / history ----------
   async function getFavorites(userId) {
     if (isSupabaseConfigured) {
@@ -251,6 +271,19 @@ const DB = (() => {
       const { error } = await supa.from("menus").delete().eq("id", id);
       if (error) throw error;
     },
+    // อัปโหลดรูปเมนูขึ้น Storage bucket "menu-images" แล้วคืนลิงก์สาธารณะกลับไป
+    // ให้หน้า admin เอาไปใส่ในช่อง image_url ก่อนกดบันทึกเมนู
+    async uploadMenuImage(menuId, file) {
+      ensureSupabase();
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+      const path = `menu-${menuId}/${Date.now()}.${ext}`;
+      const { error: uploadError } = await supa.storage
+        .from("menu-images")
+        .upload(path, file, { upsert: true, contentType: file.type || "image/jpeg" });
+      if (uploadError) throw uploadError;
+      const { data } = supa.storage.from("menu-images").getPublicUrl(path);
+      return data.publicUrl;
+    },
 
     // วัตถุดิบ
     async listIngredients() {
@@ -312,6 +345,7 @@ const DB = (() => {
     getFavorites,
     setFavorite,
     rateMenu,
+    uploadAvatar,
     admin,
   };
 })();

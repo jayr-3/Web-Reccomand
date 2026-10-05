@@ -27,6 +27,7 @@ drop function if exists public.prevent_role_escalation() cascade;
 create table if not exists public.menus (
   id int primary key,
   name text not null,
+  image_url text,                                   -- ลิงก์รูปภาพประจำเมนู (แก้ไขได้จากแผงควบคุมแอดมิน)
   ingredients jsonb not null default '[]'::jsonb,  -- [{ "raw": "...", "name": "..." }, ...]
   steps jsonb not null default '[]'::jsonb          -- ["ขั้นตอนที่ 1", "ขั้นตอนที่ 2", ...]
 );
@@ -80,6 +81,7 @@ create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   email text,
   name text,
+  avatar_url text,                                   -- ลิงก์รูปโปรไฟล์ (เก็บไฟล์จริงไว้ใน Storage bucket "avatars")
   age int,
   weight_kg numeric,
   height_cm numeric,
@@ -247,3 +249,39 @@ create policy "allergens_admin_write"
   on public.allergens for all
   using (public.is_admin())
   with check (public.is_admin());
+
+-- ---------------------------------------------------------
+-- 7) Supabase Storage: ที่เก็บไฟล์รูปภาพ
+--    - "menu-images" : รูปเมนูอาหาร อ่านได้สาธารณะ แก้ไขได้เฉพาะแอดมิน
+--    - "avatars"     : รูปโปรไฟล์ อ่านได้สาธารณะ แต่ละคนแก้ไขได้แค่โฟลเดอร์
+--                      ของตัวเอง (พาธต้องขึ้นต้นด้วย {user_id}/...)
+-- ---------------------------------------------------------
+insert into storage.buckets (id, name, public)
+values ('menu-images', 'menu-images', true)
+on conflict (id) do update set public = true;
+
+insert into storage.buckets (id, name, public)
+values ('avatars', 'avatars', true)
+on conflict (id) do update set public = true;
+
+drop policy if exists "menu_images_public_read" on storage.objects;
+create policy "menu_images_public_read"
+  on storage.objects for select
+  using (bucket_id = 'menu-images');
+
+drop policy if exists "menu_images_admin_write" on storage.objects;
+create policy "menu_images_admin_write"
+  on storage.objects for all
+  using (bucket_id = 'menu-images' and public.is_admin())
+  with check (bucket_id = 'menu-images' and public.is_admin());
+
+drop policy if exists "avatars_public_read" on storage.objects;
+create policy "avatars_public_read"
+  on storage.objects for select
+  using (bucket_id = 'avatars');
+
+drop policy if exists "avatars_owner_write" on storage.objects;
+create policy "avatars_owner_write"
+  on storage.objects for all
+  using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text)
+  with check (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
