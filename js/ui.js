@@ -232,19 +232,57 @@ function createIngredientPicker({ inputEl, resultsEl, chipListEl, emptyText = "�
 }
 
 /* ---------- Health condition picker ---------- */
+/**
+ * สร้างตัวเลือกอาการแพ้/โรคประจำตัวแบบ 2 ระดับ: หมวดใหญ่ (เช่น "แพ้ถั่ว") จะกาง
+ * ออกมาเป็นตัวเลือกย่อยที่เจาะจงกว่า (เช่น "แพ้ถั่วลิสง", "แพ้ถั่วเหลือง") ตามคอลัมน์
+ * parent_id ของตาราง allergens — ตัวที่ใช้ "เลือก" จริงคือหมวดย่อย (แยกกรองตาม
+ * keywords ของตัวเองอย่างเจาะจง) ส่วนหมวดใหญ่เป็นแค่ปุ่มกาง/ยุบ ไม่ใช่ checkbox
+ * (ถ้าหมวดใหญ่ไหนไม่มีลูกเลย จะแสดงเป็น checkbox ปกติเหมือนเดิม)
+ */
 function createConditionPicker(gridEl) {
   const allergens = DataStore.getAllergens();
   let selected = [];
 
-  gridEl.innerHTML = allergens
-    .map(
-      (a) => `
-      <label class="condition-toggle" data-id="${a.id}">
+  const topLevel = allergens.filter((a) => !a.parent_id);
+  const childrenOf = (id) => allergens.filter((a) => a.parent_id === id);
+
+  function childCheckboxHtml(a) {
+    return `
+      <label class="condition-toggle condition-toggle-sub" data-id="${a.id}">
         <input type="checkbox" value="${a.id}" />
         <span>${a.icon} ${a.label}</span>
-      </label>`
-    )
+      </label>`;
+  }
+
+  gridEl.innerHTML = topLevel
+    .map((a) => {
+      const children = childrenOf(a.id);
+      if (children.length === 0) {
+        return `
+          <label class="condition-toggle" data-id="${a.id}">
+            <input type="checkbox" value="${a.id}" />
+            <span>${a.icon} ${a.label}</span>
+          </label>`;
+      }
+      return `
+        <div class="condition-group" data-group-id="${a.id}">
+          <button type="button" class="condition-group-header">
+            <span>${a.icon} ${a.label}</span>
+            <span class="condition-group-chevron">⌄</span>
+          </button>
+          <div class="condition-group-children">
+            ${children.map(childCheckboxHtml).join("")}
+          </div>
+        </div>`;
+    })
     .join("");
+
+  // ปุ่มกาง/ยุบหมวดใหญ่
+  gridEl.querySelectorAll(".condition-group-header").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      btn.closest(".condition-group").classList.toggle("is-open");
+    });
+  });
 
   gridEl.querySelectorAll(".condition-toggle").forEach((label) => {
     const input = label.querySelector("input");
@@ -262,6 +300,11 @@ function createConditionPicker(gridEl) {
         const input = label.querySelector("input");
         input.checked = ids.includes(input.value);
         label.classList.toggle("is-checked", input.checked);
+        // กางหมวดใหญ่ออกอัตโนมัติถ้ามีตัวเลือกย่อยที่ถูกเลือกไว้อยู่ข้างใน
+        if (input.checked) {
+          const group = label.closest(".condition-group");
+          if (group) group.classList.add("is-open");
+        }
       });
     },
   };

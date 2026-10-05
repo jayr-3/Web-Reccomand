@@ -60,9 +60,10 @@ create policy "ingredients_public_read"
 --    (อ่านได้สาธารณะ แก้ไขได้เฉพาะแอดมิน)
 -- ---------------------------------------------------------
 create table if not exists public.allergens (
-  id text primary key,        -- เช่น 'milk', 'egg', 'nuts', 'seafood', 'wheat'
+  id text primary key,        -- เช่น 'milk', 'egg', 'nuts', 'shellfish', 'wheat'
   label text not null,        -- ป้ายข้อความที่แสดงผล เช่น 'แพ้นมวัว'
   icon text not null,         -- อิโมจิไอคอนหน้าป้าย
+  parent_id text references public.allergens (id) on delete cascade, -- ถ้าไม่ว่าง = เป็นตัวเลือกย่อยของหมวดนี้ เช่น 'nuts_peanut' มี parent_id = 'nuts'
   keywords text[] not null default '{}',  -- คำที่ใช้จับคู่กับชื่อวัตถุดิบในเมนู
   sort_order int not null default 0
 );

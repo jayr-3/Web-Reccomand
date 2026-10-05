@@ -7,7 +7,7 @@
  * ตารางที่ต้องมี (ดู supabase/schema.sql + supabase/seed.sql):
  *   menus(id, name, ingredients jsonb, steps jsonb)
  *   ingredients(name, category)
- *   allergens(id, label, icon, keywords text[])
+ *   allergens(id, label, icon, parent_id, keywords text[]) — parent_id ไม่ว่าง = ตัวเลือกย่อย
  *
  * ถ้ายังไม่ได้รันสคริปต์ตั้งค่าฐานข้อมูล หรือเชื่อมต่อ Supabase ไม่ได้
  * DataStore.init() จะโยน error ออกมา ให้แต่ละหน้าจับ error นี้แล้วแสดง
@@ -35,7 +35,7 @@ const DataStore = (() => {
     const [menuRes, ingredientRes, allergenRes] = await Promise.all([
       supa.from("menus").select("id, name, ingredients, steps, image_url").order("id"),
       supa.from("ingredients").select("name, category").order("name"),
-      supa.from("allergens").select("id, label, icon, keywords").order("sort_order"),
+      supa.from("allergens").select("id, label, icon, keywords, parent_id").order("sort_order"),
     ]);
 
     if (menuRes.error) throw menuRes.error;

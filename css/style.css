@@ -406,6 +406,48 @@ button { font-family: inherit; }
   color: var(--primary-darker);
 }
 
+/* ---------- Condition picker: หมวดใหญ่ + ตัวเลือกย่อย ---------- */
+.condition-group {
+  grid-column: 1 / -1;
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface);
+}
+.condition-group-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: none;
+  background: var(--surface-alt);
+  padding: 10px 12px;
+  font-weight: 700;
+  font-size: 0.87rem;
+  font-family: inherit;
+  color: var(--ink);
+  cursor: pointer;
+}
+.condition-group-chevron {
+  transition: transform 0.15s ease;
+  color: var(--ink-faint);
+}
+.condition-group.is-open .condition-group-chevron { transform: rotate(180deg); }
+.condition-group-children {
+  display: none;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+  padding: 12px;
+}
+.condition-group.is-open .condition-group-children { display: grid; }
+.condition-toggle-sub {
+  padding: 9px 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  background: var(--surface);
+}
+
 /* ---------- 9. Result list (recipes) ---------- */
 .result-meta { color: var(--ink-soft); font-size: 0.9rem; }
 

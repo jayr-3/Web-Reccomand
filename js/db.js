@@ -17,7 +17,7 @@
  *             rating int, created_at)
  *   menus(id, name, ingredients jsonb, steps jsonb)
  *   ingredients(id, name, category)
- *   allergens(id, label, icon, keywords text[], sort_order)
+ *   allergens(id, label, icon, parent_id, keywords text[], sort_order) — parent_id ไม่ว่าง = ตัวเลือกย่อย
  * ---------------------------------------------------------------
  */
 

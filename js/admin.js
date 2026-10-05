@@ -301,12 +301,24 @@
   const allergenFormTitle = document.getElementById("allergen-form-title");
   const allergenFormCancel = document.getElementById("allergen-form-cancel");
   const allergenIdInput = document.getElementById("allergen-id");
+  const allergenParentSelect = document.getElementById("allergen-parent");
   let allergensList = [];
+
+  // เติมตัวเลือก "หมวดหมู่หลัก" ในฟอร์ม จากรายการหมวดใหญ่ที่มีอยู่ (ไม่รวมตัวเอง
+  // ตอนแก้ไข กันเลือกตัวเองเป็นพ่อของตัวเอง และไม่รวมหมวดที่เป็นหมวดย่อยอยู่แล้ว
+  // เพื่อกันการซ้อนเกิน 2 ระดับ)
+  function refreshAllergenParentOptions(excludeId = null) {
+    const topLevelOptions = allergensList.filter((a) => !a.parent_id && a.id !== excludeId);
+    allergenParentSelect.innerHTML =
+      `<option value="">— ไม่มี (เป็นหมวดหมู่หลักเอง) —</option>` +
+      topLevelOptions.map((a) => `<option value="${a.id}">${a.icon} ${a.label}</option>`).join("");
+  }
 
   function resetAllergenForm() {
     allergenForm.reset();
     document.getElementById("allergen-order").value = 0;
     allergenIdInput.disabled = false;
+    refreshAllergenParentOptions();
     allergenFormTitle.textContent = "เพิ่มตัวเลือกอาการแพ้ใหม่";
     allergenFormCancel.classList.add("hidden");
   }
@@ -318,6 +330,8 @@
     document.getElementById("allergen-icon").value = a.icon;
     document.getElementById("allergen-keywords").value = a.keywords.join(", ");
     document.getElementById("allergen-order").value = a.sort_order;
+    refreshAllergenParentOptions(a.id);
+    allergenParentSelect.value = a.parent_id || "";
     allergenFormTitle.textContent = `แก้ไข: ${a.label}`;
     allergenFormCancel.classList.remove("hidden");
     allergenForm.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -328,32 +342,44 @@
       allergenListEl.innerHTML = `<div class="empty-state"><div class="glyph">🛡️</div><p class="mb-0">ยังไม่มีตัวเลือกอาการแพ้</p></div>`;
       return;
     }
-    allergenListEl.innerHTML = "";
-    allergensList.forEach((a) => {
-      const row = document.createElement("div");
-      row.className = "admin-row";
-      row.innerHTML = `
-        <div class="info">
-          <div class="title">${a.icon} ${a.label} <span class="meta">(${a.id})</span></div>
-          <div class="meta">คำสำคัญ: ${a.keywords.join(", ")}</div>
-        </div>
-        <div class="actions">
-          <button class="btn btn-outline btn-sm" data-action="edit">แก้ไข</button>
-          <button class="btn btn-danger-outline btn-sm" data-action="delete">ลบ</button>
+    const topLevel = allergensList.filter((a) => !a.parent_id);
+    const childrenOf = (id) => allergensList.filter((a) => a.parent_id === id);
+
+    function rowHtml(a, isChild) {
+      return `
+        <div class="admin-row${isChild ? " admin-row-sub" : ""}" data-id="${a.id}" style="${isChild ? "margin-left:24px; border-style:dashed;" : ""}">
+          <div class="info">
+            <div class="title">${a.icon} ${a.label} <span class="meta">(${a.id})</span></div>
+            <div class="meta">คำสำคัญ: ${a.keywords.join(", ")}</div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-outline btn-sm" data-action="edit">แก้ไข</button>
+            <button class="btn btn-danger-outline btn-sm" data-action="delete">ลบ</button>
+          </div>
         </div>`;
+    }
+
+    allergenListEl.innerHTML = topLevel
+      .map((a) => rowHtml(a, false) + childrenOf(a.id).map((c) => rowHtml(c, true)).join(""))
+      .join("");
+
+    allergenListEl.querySelectorAll(".admin-row").forEach((row) => {
+      const a = allergensList.find((x) => x.id === row.dataset.id);
       row.querySelector('[data-action="edit"]').addEventListener("click", () => editAllergen(a));
       row.querySelector('[data-action="delete"]').addEventListener("click", () => deleteAllergen(a));
-      allergenListEl.appendChild(row);
     });
   }
 
   async function loadAllergens() {
     allergensList = await DB.admin.listAllergens();
     renderAllergens();
+    refreshAllergenParentOptions(allergenIdInput.disabled ? allergenIdInput.value : null);
   }
 
   async function deleteAllergen(a) {
-    if (!confirm(`ลบตัวเลือก "${a.label}" ใช่หรือไม่?`)) return;
+    const hasChildren = allergensList.some((x) => x.parent_id === a.id);
+    const warning = hasChildren ? ` (หมวดย่อยทั้งหมดข้างใต้จะถูกลบไปด้วย!)` : "";
+    if (!confirm(`ลบตัวเลือก "${a.label}" ใช่หรือไม่?${warning}`)) return;
     try {
       await DB.admin.deleteAllergen(a.id);
       Toast.show("ลบแล้ว", "success");
@@ -378,6 +404,7 @@
       id: allergenIdInput.value.trim(),
       label: document.getElementById("allergen-label").value.trim(),
       icon: document.getElementById("allergen-icon").value.trim(),
+      parent_id: allergenParentSelect.value || null,
       keywords,
       sort_order: Number(document.getElementById("allergen-order").value) || 0,
     };
