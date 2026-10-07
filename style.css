@@ -47,7 +47,78 @@
 
   --container: 1180px;
   --nav-h: 64px;
+
+  /* โทนกลับสี ("ชิพเข้ม") สำหรับ toast/ปุ่ม-dark/แท็บที่ active — ตั้งเป็นโทเคนแยก
+     เพราะความหมายของมันคือ "เน้นสุด" ไม่ใช่ "สีตัวอักษร" เหมือน --ink เลยต้องสลับขั้ว
+     กันเองเวลาเปลี่ยนธีม ไม่ผูกกับ --ink โดยตรง */
+  --contrast-bg: #171717;
+  --contrast-text: #FFFFFF;
+
+  /* Sidebar ของโซนสมาชิก/แอดมินตั้งใจให้มืดเสมอไม่ว่าจะสลับธีมไหน เพื่อให้ยังดู
+     เป็นแถบควบคุมที่แยกจากพื้นที่เนื้อหาชัดเจน */
+  --sidebar-bg: #15151a;
+
+  --navbar-bg: rgba(255, 255, 255, 0.9);
 }
+
+/* ---------- ธีมมืด ---------- */
+:root[data-theme="dark"] {
+  --bg: #121214;
+  --surface: #1B1B1F;
+  --surface-alt: #232327;
+  --surface-sunken: #1A1A1D;
+
+  --ink: #F2F2F2;
+  --ink-soft: #B9B9BE;
+  --ink-faint: #7A7A80;
+
+  --primary: #FF6A33;
+  --primary-dark: #FF8255;
+  --primary-darker: #FFA37A;
+  --primary-tint: #3A2015;
+  --primary-tint-soft: #2A160F;
+
+  --danger: #F87171;
+  --danger-dark: #FCA5A5;
+  --danger-tint: #3B1617;
+
+  --success: #4ADE80;
+  --success-dark: #86EFAC;
+  --success-tint: #11291A;
+
+  --border: #2A2A30;
+  --border-strong: #3A3A42;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 16px 40px -16px rgba(0, 0, 0, 0.65);
+
+  --contrast-bg: #F2F2F2;
+  --contrast-text: #121214;
+
+  --navbar-bg: rgba(18, 18, 20, 0.86);
+}
+
+/* จุดที่ยังอ้างอิงสีตายตัวแทนโทเคน (เพิ่มเข้ามาทีหลังในหน้า Home/การ์ดข่าว ฯลฯ)
+   ปรับให้เข้ากับธีมมืดเป็นรายจุดตรงนี้ */
+:root[data-theme="dark"] .chip button { background: rgba(255, 255, 255, 0.1); }
+:root[data-theme="dark"] .chip button:hover { background: rgba(255, 255, 255, 0.18); }
+:root[data-theme="dark"] .overlay { background: rgba(0, 0, 0, 0.6); }
+:root[data-theme="dark"] .home-title { color: var(--ink); }
+:root[data-theme="dark"] .home-subtitle { color: var(--ink-soft); }
+:root[data-theme="dark"] .section-title { color: var(--ink); }
+:root[data-theme="dark"] .news-card { background: var(--surface); border-color: var(--border); box-shadow: none; }
+:root[data-theme="dark"] .news-card:hover { border-color: var(--primary); box-shadow: var(--shadow-sm); }
+:root[data-theme="dark"] .news-icon { background: var(--primary-tint-soft); }
+:root[data-theme="dark"] .news-card-title { color: var(--ink); }
+:root[data-theme="dark"] .news-card-desc { color: var(--ink-soft); }
+:root[data-theme="dark"] .btn-action { background: var(--surface); color: var(--primary); border-color: var(--primary); }
+:root[data-theme="dark"] .btn-action:hover { background: var(--primary); color: #fff; }
+:root[data-theme="dark"] .btn-dark:hover { background: #ffffff; }
+:root[data-theme="dark"] .menu-card-media,
+:root[data-theme="dark"] .history-thumb,
+:root[data-theme="dark"] .recommend-image-wrapper { background-color: var(--surface-alt); }
+:root[data-theme="dark"] .mobile-topbar { background: var(--surface); border-bottom-color: var(--border); }
+:root[data-theme="dark"] .mobile-topbar-toggle { background: var(--surface-alt); border-color: var(--border-strong); color: var(--ink); }
 
 /* ---------- 2. Reset & base ---------- */
 * { box-sizing: border-box; }
@@ -64,6 +135,7 @@ body {
   font-size: 1rem;
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 h1, h2, h3, h4 {
@@ -135,15 +207,6 @@ button { font-family: inherit; }
 
 .section { padding: 56px 0; }
 .section-tight { padding: 32px 0; }
-/* =========================================
-   Home Page Styles (หน้าหลัก)
-========================================= */
-.home-container {
-  max-width: 1000px;
-  margin-left: 260px;
-  padding: 32px 24px 40px 24px;
-  font-family: var(--font-body); /* ดึงฟอนต์เนื้อหาของระบบ */
-}
 
 /* หัวข้อทั้งหมดในหน้า Home ให้ใช้ฟอนต์หัวข้อของระบบ */
 .home-title,
@@ -165,11 +228,45 @@ button { font-family: inherit; }
   position: fixed;
   inset: 0 0 auto 0;
   height: var(--nav-h);
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--navbar-bg);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--border);
   z-index: 100;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ---------- ปุ่มสลับธีมมืด/สว่าง ---------- */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 1.05rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease, transform 0.12s ease;
+}
+.theme-toggle:hover { border-color: var(--primary); color: var(--primary-dark); }
+.theme-toggle:active { transform: scale(0.92); }
+
+.theme-toggle-sidebar {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+.theme-toggle-sidebar:hover { background: rgba(255, 255, 255, 0.16); border-color: rgba(255, 255, 255, 0.3); color: #fff; }
 
 .navbar .container {
   height: 100%;
@@ -212,7 +309,7 @@ button { font-family: inherit; }
   border-radius: var(--radius-pill);
 }
 .nav-link:hover { background: var(--surface-alt); text-decoration: none; color: var(--ink); }
-.nav-link.is-active { background: var(--ink); color: #fff; }
+.nav-link.is-active { background: var(--contrast-bg); color: var(--contrast-text); }
 
 .nav-toggle {
   display: none;
@@ -266,7 +363,7 @@ button { font-family: inherit; }
 .btn-primary { background: var(--primary); color: #fff; }
 .btn-primary:hover { background: var(--primary-dark); }
 
-.btn-dark { background: var(--ink); color: #fff; }
+.btn-dark { background: var(--contrast-bg); color: var(--contrast-text); }
 .btn-dark:hover { background: #000; }
 
 .btn-outline { background: var(--surface); border-color: var(--border-strong); color: var(--ink); }
@@ -414,6 +511,63 @@ button { font-family: inherit; }
   background: var(--primary-tint-soft);
   color: var(--primary-darker);
 }
+
+/* ---------- Condition picker: หมวดใหญ่ + ตัวเลือกย่อย ---------- */
+.condition-group {
+  grid-column: 1 / -1;
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface);
+}
+.condition-group-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: none;
+  background: var(--surface-alt);
+  padding: 10px 12px;
+  font-weight: 700;
+  font-size: 0.87rem;
+  font-family: inherit;
+  color: var(--ink);
+  cursor: pointer;
+}
+.condition-group-chevron {
+  transition: transform 0.15s ease;
+  color: var(--ink-faint);
+}
+.condition-group.is-open .condition-group-chevron { transform: rotate(180deg); }
+.condition-group-children {
+  display: none;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+  padding: 12px;
+}
+.condition-group.is-open .condition-group-children { display: grid; }
+.condition-toggle-sub {
+  padding: 9px 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  background: var(--surface);
+}
+
+/* ---------- แถวปุ่มรีเซ็ตตัวกรอง ---------- */
+.filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+.btn-reset {
+  background: transparent;
+  color: var(--ink-faint);
+  border-color: transparent;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+}
+.btn-reset:hover { color: var(--danger); background: var(--danger-tint); }
 
 /* ---------- 9. Result list (recipes) ---------- */
 .result-meta { color: var(--ink-soft); font-size: 0.9rem; }
@@ -569,8 +723,8 @@ button { font-family: inherit; }
   align-items: center;
 }
 .toast {
-  background: var(--ink);
-  color: #fff;
+  background: var(--contrast-bg);
+  color: var(--contrast-text);
   padding: 12px 20px;
   border-radius: var(--radius-pill);
   font-size: 0.9rem;
@@ -620,6 +774,143 @@ button { font-family: inherit; }
 }
 .mode-cards { display: grid; gap: 16px; grid-template-columns: 1fr; }
 @media (min-width: 640px) { .mode-cards { grid-template-columns: 1fr 1fr; } }
+
+/* ---------- Menu preview grid (index.html) ---------- */
+.menu-preview-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, 1fr);
+}
+@media (min-width: 640px) { .menu-preview-grid { grid-template-columns: repeat(4, 1fr); } }
+
+.menu-preview-card {
+  display: block;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+.menu-preview-card:hover { border-color: var(--primary); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.menu-preview-card.skeleton {
+  height: 190px;
+  background: linear-gradient(100deg, var(--surface-alt) 30%, var(--border) 50%, var(--surface-alt) 70%);
+  background-size: 200% 100%;
+  animation: skeleton-shine 1.4s ease-in-out infinite;
+}
+@keyframes skeleton-shine {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.menu-preview-media { width: 100%; aspect-ratio: 4/3; overflow: hidden; background: var(--surface-alt); }
+.menu-preview-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.menu-preview-fallback {
+  width: 100%; height: 100%;
+  display: grid; place-items: center;
+  font-size: 2.4rem;
+}
+.menu-preview-name {
+  padding: 12px 14px;
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+/* ---------- Menu carousel (hero, index.html) ---------- */
+.menu-carousel { display: flex; flex-direction: column; }
+.carousel-viewport {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--surface-alt);
+}
+.carousel-track {
+  display: flex;
+  height: 100%;
+  transition: transform 0.5s cubic-bezier(0.65, 0, 0.35, 1);
+}
+.carousel-slide {
+  position: relative;
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+.carousel-slide.skeleton {
+  background: linear-gradient(100deg, var(--surface-alt) 30%, var(--border) 50%, var(--surface-alt) 70%);
+  background-size: 200% 100%;
+  animation: skeleton-shine 1.4s ease-in-out infinite;
+}
+.carousel-slide img,
+.carousel-slide .menu-preview-fallback {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  font-size: 3rem;
+}
+.carousel-caption {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: 28px 16px 14px;
+  background: linear-gradient(to top, rgba(0,0,0,0.65), rgba(0,0,0,0));
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+}
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+.carousel-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  border: none;
+  background: var(--border-strong);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.carousel-dot.is-active { background: var(--primary); transform: scale(1.2); }
+
+/* ---------- Steps grid (index.html, Step การใช้งาน) ---------- */
+.steps-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(2, 1fr);
+}
+@media (min-width: 760px) { .steps-grid { grid-template-columns: repeat(4, 1fr); } }
+
+.step-card-lg {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 26px 20px;
+  text-align: center;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.step-card-lg:hover { border-color: var(--primary); box-shadow: var(--shadow-sm); }
+.step-num {
+  display: inline-grid;
+  place-items: center;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.05rem;
+  margin-bottom: 14px;
+}
+.step-card-lg h3 { margin: 0 0 8px; font-size: 1.02rem; }
+.step-card-lg p { margin: 0; color: var(--ink-soft); font-size: 0.88rem; line-height: 1.55; }
 
 .flow-figure {
   background: var(--surface);
@@ -709,7 +1000,7 @@ button { font-family: inherit; }
   position: fixed;
   top: 0; bottom: 0; left: 0;
   width: 268px;
-  background: var(--ink);
+  background: var(--sidebar-bg);
   color: #fff;
   display: flex;
   flex-direction: column;
@@ -1058,8 +1349,8 @@ html, body {
     align-items: center;
     justify-content: space-between;
     padding: 10px 16px;
-    background: #ffffff;
-    border-bottom: 1px solid #eaeaea;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
     position: sticky;
     top: 0;
     z-index: 99;
@@ -1067,12 +1358,13 @@ html, body {
   }
 
   .mobile-topbar-toggle {
-    background: #f3f4f6;
-    border: 1px solid #e5e7eb;
+    background: var(--surface-alt);
+    border: 1px solid var(--border-strong);
     border-radius: 6px;
     padding: 6px 10px;
     font-size: 1.2rem;
     cursor: pointer;
+    color: var(--ink);
   }
 
   /* ตั้งค่า Sidebar บนมือถือ */
@@ -1083,7 +1375,7 @@ html, body {
     bottom: 0;
     width: 270px !important;
     height: 100vh;
-    background: var(--ink);
+    background: var(--sidebar-bg);
     z-index: 9999 !important;
     transform: translateX(-100%) !important;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;

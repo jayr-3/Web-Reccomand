@@ -2,6 +2,15 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8" />
+<script>
+  // กันหน้าวาบสีผิดธีมตอนโหลด (อ่านค่าธีมที่เคยเลือกไว้ก่อน CSS จะ paint)
+  (function () {
+    try {
+      var t = localStorage.getItem('theme');
+      document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
+    } catch (e) {}
+  })();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>ค้นหาเมนู — โหมดผู้ใช้งานทั่วไป</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,12 +22,15 @@
   <nav class="navbar">
     <div class="container">
       <a href="index.html" class="brand"><span class="brand-mark">🍲</span> กินอะไรดี</a>
-      <button class="nav-toggle" aria-label="เปิดเมนู" aria-expanded="false">☰</button>
-      <div class="nav-links">
-        <a href="index.html" class="nav-link" data-page="home">หน้าหลัก</a>
-        <a href="guest.html" class="nav-link" data-page="guest">ลองเลย (ไม่ต้องสมัคร)</a>
-        <a href="login.html" class="nav-link" data-page="login">เข้าสู่ระบบ</a>
-        <a href="register.html" class="nav-link btn btn-primary btn-sm" data-page="register">สมัครสมาชิก</a>
+      <div class="navbar-right">
+        <button type="button" class="theme-toggle" data-theme-toggle></button>
+        <button class="nav-toggle" aria-label="เปิดเมนู" aria-expanded="false">☰</button>
+        <div class="nav-links">
+          <a href="index.html" class="nav-link" data-page="home">หน้าหลัก</a>
+          <a href="guest.html" class="nav-link" data-page="guest">ลองเลย (ไม่ต้องสมัคร)</a>
+          <a href="login.html" class="nav-link" data-page="login">เข้าสู่ระบบ</a>
+          <a href="register.html" class="nav-link btn btn-primary btn-sm" data-page="register">สมัครสมาชิก</a>
+        </div>
       </div>
     </div>
   </nav>
@@ -49,9 +61,14 @@
           <p class="form-note">เลือกได้มากกว่า 1 ข้อ ระบบจะตัดเมนูที่มีส่วนผสมเหล่านี้ออกให้อัตโนมัติ</p>
           <div id="condition-grid" class="condition-grid"></div>
 
-          <button id="btn-recommend" class="btn btn-primary btn-block" style="margin-top:24px">
-            แนะนำเมนูให้หน่อย
-          </button>
+          <div class="row" style="margin-top:24px; gap:10px;">
+            <button id="btn-recommend" class="btn btn-primary" style="flex:1">
+              แนะนำเมนูให้หน่อย
+            </button>
+            <button type="button" id="btn-reset-filters" class="btn btn-outline">
+              ล้างตัวกรอง
+            </button>
+          </div>
         </div>
 
         <!-- ฝั่งขวา: ผลลัพธ์ -->

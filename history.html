@@ -2,6 +2,15 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8" />
+<script>
+  // กันหน้าวาบสีผิดธีมตอนโหลด (อ่านค่าธีมที่เคยเลือกไว้ก่อน CSS จะ paint)
+  (function () {
+    try {
+      var t = localStorage.getItem('theme');
+      document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
+    } catch (e) {}
+  })();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>เมนูโปรดและประวัติ — กินอะไรดี</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">

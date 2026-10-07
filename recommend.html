@@ -2,6 +2,15 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8" />
+<script>
+  // กันหน้าวาบสีผิดธีมตอนโหลด (อ่านค่าธีมที่เคยเลือกไว้ก่อน CSS จะ paint)
+  (function () {
+    try {
+      var t = localStorage.getItem('theme');
+      document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
+    } catch (e) {}
+  })();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>ค้นหาเมนู — สมาชิก</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,13 +47,18 @@
             </div>
             <div id="ingredient-chips" class="chip-list"></div>
 
-            <h3 style="margin-top:26px">2. อาการแพ้ </h3>
+            <h3 style="margin-top:26px">2. อาการแพ้ / โรคประจำตัว</h3>
             <p class="form-note">ดึงจากโปรไฟล์อัตโนมัติ · แก้ไขถาวรได้ที่หน้าโปรไฟล์</p>
             <div id="condition-grid" class="condition-grid"></div>
 
-            <button id="btn-recommend" class="btn btn-primary btn-block" style="margin-top:24px">
-              แนะนำเมนูให้หน่อย
-            </button>
+            <div class="row" style="margin-top:24px; gap:10px;">
+              <button id="btn-recommend" class="btn btn-primary" style="flex:1">
+                แนะนำเมนูให้หน่อย
+              </button>
+              <button type="button" id="btn-reset-filters" class="btn btn-outline">
+                ล้างตัวกรอง
+              </button>
+            </div>
           </div>
 
           <div class="col-main">

@@ -2,6 +2,15 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8" />
+<script>
+  // กันหน้าวาบสีผิดธีมตอนโหลด (อ่านค่าธีมที่เคยเลือกไว้ก่อน CSS จะ paint)
+  (function () {
+    try {
+      var t = localStorage.getItem('theme');
+      document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
+    } catch (e) {}
+  })();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>สมัครสมาชิก — กินอะไรดี</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,12 +22,15 @@
   <nav class="navbar">
     <div class="container">
       <a href="index.html" class="brand"><span class="brand-mark">🍲</span> กินอะไรดี</a>
-      <button class="nav-toggle" aria-label="เปิดเมนู" aria-expanded="false">☰</button>
-      <div class="nav-links">
-        <a href="index.html" class="nav-link" data-page="home">หน้าหลัก</a>
-        <a href="guest.html" class="nav-link" data-page="guest">ลองเลย (ไม่ต้องสมัคร)</a>
-        <a href="login.html" class="nav-link" data-page="login">เข้าสู่ระบบ</a>
-        <a href="register.html" class="nav-link btn btn-primary btn-sm" data-page="register">สมัครสมาชิก</a>
+      <div class="navbar-right">
+        <button type="button" class="theme-toggle" data-theme-toggle></button>
+        <button class="nav-toggle" aria-label="เปิดเมนู" aria-expanded="false">☰</button>
+        <div class="nav-links">
+          <a href="index.html" class="nav-link" data-page="home">หน้าหลัก</a>
+          <a href="guest.html" class="nav-link" data-page="guest">ลองเลย (ไม่ต้องสมัคร)</a>
+          <a href="login.html" class="nav-link" data-page="login">เข้าสู่ระบบ</a>
+          <a href="register.html" class="nav-link btn btn-primary btn-sm" data-page="register">สมัครสมาชิก</a>
+        </div>
       </div>
     </div>
   </nav>

@@ -7,6 +7,58 @@
  * ---------------------------------------------------------------
  */
 
+/* ---------- ธีมมืด/สว่าง ---------- */
+/**
+ * จัดเก็บ/อ่าน/สลับธีมผ่าน data-theme บน <html> + localStorage
+ * หมายเหตุ: แต่ละหน้าควรมี inline script เล็กๆ ใน <head> ที่อ่านค่าจาก
+ * localStorage แล้วตั้ง data-theme ไว้ก่อนที่ CSS จะ paint (กัน flash สีผิด
+ * ตอนโหลดหน้า) ไฟล์นี้โหลดท้าย body จึงใช้สำหรับ "ปุ่มกด" และ sync ไอคอนเท่านั้น
+ */
+const Theme = (() => {
+  const KEY = "theme";
+  function get() {
+    try {
+      return localStorage.getItem(KEY) === "dark" ? "dark" : "light";
+    } catch {
+      return document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    }
+  }
+  function apply(theme) {
+    document.documentElement.setAttribute("data-theme", theme === "dark" ? "dark" : "light");
+  }
+  function set(theme) {
+    apply(theme);
+    try {
+      localStorage.setItem(KEY, theme);
+    } catch {}
+  }
+  function toggle() {
+    const next = get() === "dark" ? "light" : "dark";
+    set(next);
+    return next;
+  }
+  return { get, apply, set, toggle };
+})();
+
+function syncThemeToggleIcon(btn) {
+  if (!btn) return;
+  const isDark = Theme.get() === "dark";
+  btn.textContent = isDark ? "☀️" : "🌙";
+  btn.setAttribute("aria-label", isDark ? "สลับเป็นธีมสว่าง" : "สลับเป็นธีมมืด");
+  btn.title = isDark ? "สลับเป็นธีมสว่าง" : "สลับเป็นธีมมืด";
+}
+
+/** ผูกปุ่มสลับธีม 1 ปุ่ม — เรียกซ้ำได้หลายปุ่มในหน้าเดียว (เช่น sidebar + mobile topbar) */
+function initThemeToggle(btn) {
+  if (!btn || btn.dataset.themeBound) return;
+  btn.dataset.themeBound = "1";
+  syncThemeToggleIcon(btn);
+  btn.addEventListener("click", () => {
+    Theme.toggle();
+    document.querySelectorAll("[data-theme-toggle]").forEach(syncThemeToggleIcon);
+  });
+}
+
 /* ---------- App shell (sidebar) สำหรับหน้าสมาชิก/แอดมิน ---------- */
 /**
  * วาด sidebar ของพื้นที่ที่ต้องล็อกอิน (recommend/history/profile/admin)
@@ -67,7 +119,10 @@ function renderAppShell({ activePage, user, profile }) {
         </div>
       </div>
       <nav class="sidebar-nav">${navHtml}${adminNavHtml}</nav>
-      <button type="button" id="app-shell-logout" class="sidebar-logout">ออกจากระบบ</button>
+      <div class="row" style="margin-top:16px; gap:8px;">
+        <button type="button" class="theme-toggle theme-toggle-sidebar" data-theme-toggle></button>
+        <button type="button" id="app-shell-logout" class="sidebar-logout" style="margin-top:0; flex:1;">ออกจากระบบ</button>
+      </div>
     `;
   }
 
@@ -83,7 +138,8 @@ function renderAppShell({ activePage, user, profile }) {
         <button type="button" class="mobile-topbar-toggle" aria-label="เปิดเมนู">☰</button>
         <a href="home.html" class="brand" style="text-decoration:none; font-weight:bold; color:inherit;"><span class="brand-mark">🍲</span> กินอะไรดี</a>
       </div>
-      <div class="mobile-user-status" style="display:flex; align-items:center; gap:6px; font-size:0.85rem; font-weight:500; color:#333;">
+      <div class="mobile-user-status" style="display:flex; align-items:center; gap:10px; font-size:0.85rem; font-weight:500; color:var(--ink);">
+        <button type="button" class="theme-toggle" data-theme-toggle style="width:32px; height:32px; font-size:0.95rem;"></button>
         ${userBadgeIcon}
         <span style="max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${displayName}</span>
       </div>
@@ -94,6 +150,9 @@ function renderAppShell({ activePage, user, profile }) {
     await DB.signOut();
     window.location.href = "index.html";
   });
+
+  // ผูกปุ่มสลับธีมทั้งใน sidebar และ mobile topbar (มีได้พร้อมกันในหน้าเดียว)
+  document.querySelectorAll("[data-theme-toggle]").forEach(initThemeToggle);
 
   // 3. ผูกคำสั่งเปิด/ปิด Sidebar เมื่อกดปุ่มสามขีดหรือพื้นหลังฉากหลัง (Overlay)
   const toggle = document.querySelector(".mobile-topbar-toggle");
@@ -126,6 +185,8 @@ function initNavbar() {
   document.querySelectorAll(".nav-link").forEach((a) => {
     if (a.dataset.page === current) a.classList.add("is-active");
   });
+
+  initThemeToggle(document.querySelector("[data-theme-toggle]"));
 }
 
 /* ---------- Toast ---------- */
@@ -232,19 +293,57 @@ function createIngredientPicker({ inputEl, resultsEl, chipListEl, emptyText = "�
 }
 
 /* ---------- Health condition picker ---------- */
+/**
+ * สร้างตัวเลือกอาการแพ้/โรคประจำตัวแบบ 2 ระดับ: หมวดใหญ่ (เช่น "แพ้ถั่ว") จะกาง
+ * ออกมาเป็นตัวเลือกย่อยที่เจาะจงกว่า (เช่น "แพ้ถั่วลิสง", "แพ้ถั่วเหลือง") ตามคอลัมน์
+ * parent_id ของตาราง allergens — ตัวที่ใช้ "เลือก" จริงคือหมวดย่อย (แยกกรองตาม
+ * keywords ของตัวเองอย่างเจาะจง) ส่วนหมวดใหญ่เป็นแค่ปุ่มกาง/ยุบ ไม่ใช่ checkbox
+ * (ถ้าหมวดใหญ่ไหนไม่มีลูกเลย จะแสดงเป็น checkbox ปกติเหมือนเดิม)
+ */
 function createConditionPicker(gridEl) {
   const allergens = DataStore.getAllergens();
   let selected = [];
 
-  gridEl.innerHTML = allergens
-    .map(
-      (a) => `
-      <label class="condition-toggle" data-id="${a.id}">
+  const topLevel = allergens.filter((a) => !a.parent_id);
+  const childrenOf = (id) => allergens.filter((a) => a.parent_id === id);
+
+  function childCheckboxHtml(a) {
+    return `
+      <label class="condition-toggle condition-toggle-sub" data-id="${a.id}">
         <input type="checkbox" value="${a.id}" />
         <span>${a.icon} ${a.label}</span>
-      </label>`
-    )
+      </label>`;
+  }
+
+  gridEl.innerHTML = topLevel
+    .map((a) => {
+      const children = childrenOf(a.id);
+      if (children.length === 0) {
+        return `
+          <label class="condition-toggle" data-id="${a.id}">
+            <input type="checkbox" value="${a.id}" />
+            <span>${a.icon} ${a.label}</span>
+          </label>`;
+      }
+      return `
+        <div class="condition-group" data-group-id="${a.id}">
+          <button type="button" class="condition-group-header">
+            <span>${a.icon} ${a.label}</span>
+            <span class="condition-group-chevron">⌄</span>
+          </button>
+          <div class="condition-group-children">
+            ${children.map(childCheckboxHtml).join("")}
+          </div>
+        </div>`;
+    })
     .join("");
+
+  // ปุ่มกาง/ยุบหมวดใหญ่
+  gridEl.querySelectorAll(".condition-group-header").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      btn.closest(".condition-group").classList.toggle("is-open");
+    });
+  });
 
   gridEl.querySelectorAll(".condition-toggle").forEach((label) => {
     const input = label.querySelector("input");
@@ -262,6 +361,11 @@ function createConditionPicker(gridEl) {
         const input = label.querySelector("input");
         input.checked = ids.includes(input.value);
         label.classList.toggle("is-checked", input.checked);
+        // กางหมวดใหญ่ออกอัตโนมัติถ้ามีตัวเลือกย่อยที่ถูกเลือกไว้อยู่ข้างใน
+        if (input.checked) {
+          const group = label.closest(".condition-group");
+          if (group) group.classList.add("is-open");
+        }
       });
     },
   };
