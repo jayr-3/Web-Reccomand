@@ -133,5 +133,14 @@
 
   document.getElementById("btn-recommend").addEventListener("click", runRecommendation);
 
+  // ปุ่ม "ล้างตัวกรอง" — เคลียร์วัตถุดิบและอาการแพ้ที่ปรับไว้เฉพาะครั้งนี้ กลับสู่สถานะเริ่มต้น
+  document.getElementById("btn-reset-filters")?.addEventListener("click", () => {
+    ingredientPicker.setSelected([]);
+    conditionPicker.setSelected([]);
+    summaryEl.textContent = "";
+    renderEmpty("เลือกวัตถุดิบที่มี แล้วกด “แนะนำเมนูให้หน่อย” เพื่อเริ่มค้นหา", "🧑‍🍳");
+    Toast.show("ล้างตัวกรองแล้ว", "default");
+  });
+
   renderEmpty("เลือกวัตถุดิบที่มี แล้วกด “แนะนำเมนูให้หน่อย” เพื่อเริ่มค้นหา", "🧑‍🍳");
 })();
