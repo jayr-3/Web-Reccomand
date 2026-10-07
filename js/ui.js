@@ -7,6 +7,58 @@
  * ---------------------------------------------------------------
  */
 
+/* ---------- ธีมมืด/สว่าง ---------- */
+/**
+ * จัดเก็บ/อ่าน/สลับธีมผ่าน data-theme บน <html> + localStorage
+ * หมายเหตุ: แต่ละหน้าควรมี inline script เล็กๆ ใน <head> ที่อ่านค่าจาก
+ * localStorage แล้วตั้ง data-theme ไว้ก่อนที่ CSS จะ paint (กัน flash สีผิด
+ * ตอนโหลดหน้า) ไฟล์นี้โหลดท้าย body จึงใช้สำหรับ "ปุ่มกด" และ sync ไอคอนเท่านั้น
+ */
+const Theme = (() => {
+  const KEY = "theme";
+  function get() {
+    try {
+      return localStorage.getItem(KEY) === "dark" ? "dark" : "light";
+    } catch {
+      return document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    }
+  }
+  function apply(theme) {
+    document.documentElement.setAttribute("data-theme", theme === "dark" ? "dark" : "light");
+  }
+  function set(theme) {
+    apply(theme);
+    try {
+      localStorage.setItem(KEY, theme);
+    } catch {}
+  }
+  function toggle() {
+    const next = get() === "dark" ? "light" : "dark";
+    set(next);
+    return next;
+  }
+  return { get, apply, set, toggle };
+})();
+
+function syncThemeToggleIcon(btn) {
+  if (!btn) return;
+  const isDark = Theme.get() === "dark";
+  btn.textContent = isDark ? "☀️" : "🌙";
+  btn.setAttribute("aria-label", isDark ? "สลับเป็นธีมสว่าง" : "สลับเป็นธีมมืด");
+  btn.title = isDark ? "สลับเป็นธีมสว่าง" : "สลับเป็นธีมมืด";
+}
+
+/** ผูกปุ่มสลับธีม 1 ปุ่ม — เรียกซ้ำได้หลายปุ่มในหน้าเดียว (เช่น sidebar + mobile topbar) */
+function initThemeToggle(btn) {
+  if (!btn || btn.dataset.themeBound) return;
+  btn.dataset.themeBound = "1";
+  syncThemeToggleIcon(btn);
+  btn.addEventListener("click", () => {
+    Theme.toggle();
+    document.querySelectorAll("[data-theme-toggle]").forEach(syncThemeToggleIcon);
+  });
+}
+
 /* ---------- App shell (sidebar) สำหรับหน้าสมาชิก/แอดมิน ---------- */
 /**
  * วาด sidebar ของพื้นที่ที่ต้องล็อกอิน (recommend/history/profile/admin)
@@ -67,7 +119,10 @@ function renderAppShell({ activePage, user, profile }) {
         </div>
       </div>
       <nav class="sidebar-nav">${navHtml}${adminNavHtml}</nav>
-      <button type="button" id="app-shell-logout" class="sidebar-logout">ออกจากระบบ</button>
+      <div class="row" style="margin-top:16px; gap:8px;">
+        <button type="button" class="theme-toggle theme-toggle-sidebar" data-theme-toggle></button>
+        <button type="button" id="app-shell-logout" class="sidebar-logout" style="margin-top:0; flex:1;">ออกจากระบบ</button>
+      </div>
     `;
   }
 
@@ -83,7 +138,8 @@ function renderAppShell({ activePage, user, profile }) {
         <button type="button" class="mobile-topbar-toggle" aria-label="เปิดเมนู">☰</button>
         <a href="home.html" class="brand" style="text-decoration:none; font-weight:bold; color:inherit;"><span class="brand-mark">🍲</span> กินอะไรดี</a>
       </div>
-      <div class="mobile-user-status" style="display:flex; align-items:center; gap:6px; font-size:0.85rem; font-weight:500; color:#333;">
+      <div class="mobile-user-status" style="display:flex; align-items:center; gap:10px; font-size:0.85rem; font-weight:500; color:var(--ink);">
+        <button type="button" class="theme-toggle" data-theme-toggle style="width:32px; height:32px; font-size:0.95rem;"></button>
         ${userBadgeIcon}
         <span style="max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${displayName}</span>
       </div>
@@ -94,6 +150,9 @@ function renderAppShell({ activePage, user, profile }) {
     await DB.signOut();
     window.location.href = "index.html";
   });
+
+  // ผูกปุ่มสลับธีมทั้งใน sidebar และ mobile topbar (มีได้พร้อมกันในหน้าเดียว)
+  document.querySelectorAll("[data-theme-toggle]").forEach(initThemeToggle);
 
   // 3. ผูกคำสั่งเปิด/ปิด Sidebar เมื่อกดปุ่มสามขีดหรือพื้นหลังฉากหลัง (Overlay)
   const toggle = document.querySelector(".mobile-topbar-toggle");
@@ -126,6 +185,8 @@ function initNavbar() {
   document.querySelectorAll(".nav-link").forEach((a) => {
     if (a.dataset.page === current) a.classList.add("is-active");
   });
+
+  initThemeToggle(document.querySelector("[data-theme-toggle]"));
 }
 
 /* ---------- Toast ---------- */
