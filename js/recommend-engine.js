@@ -1,16 +1,26 @@
 /**
  * recommend-engine.js
  * ---------------------------------------------------------------
- * แกนหลักของ "ระบบแนะนำเมนูอาหาร" ตามกรอบแนวคิดในโครงร่างปัญหาพิเศษ
- * ทำงาน 2 ขั้นตอนตามลำดับ:
+ * แกนหลักของ "ระบบแนะนำเมนูอาหาร" — ใช้เทคนิคการแนะนำแบบมีเงื่อนไข
+ * (Constraint-based Recommendation) แบ่งการทำงานเป็น 3 ขั้นตอนตามลำดับ
+ * ตรงตามกระบวนการที่ออกแบบไว้ในโครงร่างปัญหาพิเศษ:
  *
- *  1) Health Condition Filter
- *     ตัดเมนูที่มีวัตถุดิบตรงกับอาการแพ้ / โรคประจำตัวที่ผู้ใช้เลือกออก
+ *  1) การจับคู่ข้อมูล (Ingredient Matching)
+ *     นำรายการวัตถุดิบที่ผู้ใช้ป้อนเข้ามา ไปเปรียบเทียบกับส่วนผสมของเมนูอาหาร
+ *     ในฐานข้อมูลทีละเมนู เพื่อคัดกรองเบื้องต้นว่ามีเมนูใดบ้างที่สามารถ
+ *     ประกอบขึ้นได้ (บางส่วนหรือทั้งหมด) จากวัตถุดิบชุดนี้
  *
- *  2) Content-Based Recommendation
- *     ให้คะแนนเมนูที่เหลือ จากสัดส่วนวัตถุดิบที่ผู้ใช้ "มีอยู่จริง"
- *     เทียบกับวัตถุดิบทั้งหมดของเมนูนั้น (ยิ่งมีครบยิ่งคะแนนสูง)
- *     ถ้าเป็นสมาชิก จะบวกคะแนนเพิ่มจากพฤติกรรมในอดีต (เมนู/วัตถุดิบที่เคยถูกใจ)
+ *  2) การคัดกรองข้อมูล (Safety Filter)
+ *     นำเงื่อนไขอาการแพ้ / โรคประจำตัวที่ผู้ใช้เลือกไว้ มาสร้างเป็นเงื่อนไข
+ *     ตัดออก แล้วตรวจสอบซ้อนกับผลลัพธ์จากขั้นตอนที่ 1 — เมนูใดมีวัตถุดิบ
+ *     ตรงกับเงื่อนไขอาการแพ้แม้แต่รายการเดียว จะถูกตัดออกทันที เพื่อการันตี
+ *     ว่าผลลัพธ์สุดท้ายเป็นเมนูที่ปลอดภัย 100%
+ *
+ *  3) การคำนวณคะแนนและจัดลำดับ (Scoring & Ranking)
+ *     นำเมนูที่ผ่านการคัดกรองความปลอดภัยแล้วมาจัดเรียงลำดับการแสดงผล โดยใช้
+ *     "คะแนนความนิยม" — ค่าเฉลี่ยรีวิว (1-5 ดาว) ที่สมาชิกคนอื่นเคยให้ไว้กับ
+ *     เมนูนั้น เรียงจากมากไปน้อย (เมนูที่ยังไม่มีรีวิวถือว่าคะแนนความนิยม = 0
+ *     จึงอยู่ท้ายแถว ไม่ได้ถูกตัดออก)
  * ---------------------------------------------------------------
  */
 
@@ -23,98 +33,100 @@ const RecommendEngine = (() => {
   function ingredientMatches(userIngredient, menuIngredientName) {
     const u = normalize(userIngredient);
     const m = normalize(menuIngredientName);
-    
+
     if (!u || !m) return false;
 
-    // --- เพิ่มเงื่อนไขยกเว้นคำ (Exclusion Logic) ---
-    // กรณีผู้ใช้ค้นหาคำว่า "ไก่"
-    if (u === 'ไก่') {
-      // ดักไม่ให้ตรงกับ ไข่, รสดี, ซุป
-      if (m.includes('ไข่') || m.includes('รสดี') || m.includes('ซุป')) {
-        return false;
-      }
+    // --- เงื่อนไขยกเว้นคำ (Exclusion Logic) กันคำที่ substring ตรงกันโดยบังเอิญ ---
+    if (u === "ไก่") {
+      // ดักไม่ให้ "ไก่" ไปตรงกับ ไข่, รสดี, ซุป
+      if (m.includes("ไข่") || m.includes("รสดี") || m.includes("ซุป")) return false;
     }
-
-    // กรณีผู้ใช้ค้นหาคำว่า "หมู"
-    if (u === 'หมู') {
-      // ดักไม่ให้ตรงกับ รสดี, ซุป
-      if (m.includes('รสดี') || m.includes('ซุป')) {
-        return false;
-      }
+    if (u === "หมู") {
+      // ดักไม่ให้ "หมู" ไปตรงกับ รสดี, ซุป
+      if (m.includes("รสดี") || m.includes("ซุป")) return false;
     }
     // ---------------------------------------------
 
     return m.includes(u) || u.includes(m);
   }
 
-  /** ขั้นตอนที่ 1: Health Condition Filter */
-  function filterByHealthConditions(menus, selectedAllergenIds) {
-    if (!selectedAllergenIds || selectedAllergenIds.length === 0) return menus.slice();
-    return menus.filter((menu) => !menu.allergenTags.some((tag) => selectedAllergenIds.includes(tag)));
-  }
-
   /**
-   * ขั้นตอนที่ 2: ให้คะแนนความเข้ากันได้ของวัตถุดิบ + personalization (ถ้ามี)
+   * ขั้นตอนที่ 1: การจับคู่ข้อมูล
+   * เทียบวัตถุดิบที่ผู้ใช้มีกับส่วนผสมของแต่ละเมนู คืนรายการเมนูพร้อมรายละเอียด
+   * การจับคู่ (matched/missing/pct) — ถ้าผู้ใช้ไม่ได้กรอกวัตถุดิบเลย ถือว่ายัง
+   * ไม่มีเงื่อนไขกรอง จึงคืนเมนูทั้งหมดไว้ก่อน (ให้ขั้นตอนที่ 3 จัดอันดับด้วย
+   * คะแนนความนิยมแทน); ถ้ากรอกวัตถุดิบมา จะคัดเฉพาะเมนูที่จับคู่ได้อย่างน้อย
+   * 1 รายการ (ไม่ต้องครบทุกอย่าง) ไว้เป็นตัวเลือกเบื้องต้น
    */
-  function scoreMenus(menus, availableIngredients, options = {}) {
-    const { likedIngredientFreq = {}, favoriteMenuIds = new Set() } = options;
-    const maxFreq = Math.max(1, ...Object.values(likedIngredientFreq));
-
-    // 1. คำนวณคะแนนของแต่ละเมนูตามปกติ
-    let scoredResults = menus.map((menu) => {
+  function matchByIngredients(menus, availableIngredients) {
+    const matched = menus.map((menu) => {
       const total = menu.ingredients.length;
-      const matched = [];
+      const matchedIngredients = [];
       const missing = [];
 
       menu.ingredients.forEach((ing) => {
         const hit = availableIngredients.some((userIng) => ingredientMatches(userIng, ing.name));
-        if (hit) matched.push(ing);
+        if (hit) matchedIngredients.push(ing);
         else missing.push(ing);
       });
 
-      const baseScore = total > 0 ? matched.length / total : 0;
-
-      // personalization: เฉลี่ยความถี่ของวัตถุดิบเมนูนี้ในประวัติที่เคยถูกใจ (0..1)
-      const personalScores = menu.ingredients.map(
-        (ing) => (likedIngredientFreq[normalize(ing.name)] || 0) / maxFreq
-      );
-      const personalBoost =
-        personalScores.length > 0 ? personalScores.reduce((a, b) => a + b, 0) / personalScores.length : 0;
-
-      const hasPersonalization = Object.keys(likedIngredientFreq).length > 0;
-      const finalScore = hasPersonalization ? baseScore * 0.75 + personalBoost * 0.25 : baseScore;
-
       return {
         menu,
-        matchedCount: matched.length,
+        matchedCount: matchedIngredients.length,
         totalCount: total,
         missing,
-        pct: Math.round(finalScore * 100),
-        ready: matched.length === total,
-        isFavorite: favoriteMenuIds.has(menu.id),
+        pct: total > 0 ? Math.round((matchedIngredients.length / total) * 100) : 0,
+        ready: matchedIngredients.length === total,
+        avgRating: menu.avgRating || 0,
+        ratingCount: menu.ratingCount || 0,
       };
     });
 
-    // -----------------------------------------------------------------
-    // [จุดที่แก้ไข] หากมีการกรอกวัตถุดิบ ให้คัดเมนูที่ไม่มีวัตถุดิบนั้นเลย (matchedCount === 0) ออกทันที
-    // -----------------------------------------------------------------
     if (availableIngredients && availableIngredients.length > 0) {
-      scoredResults = scoredResults.filter((item) => item.matchedCount > 0);
+      return matched.filter((item) => item.matchedCount > 0);
     }
-
-    // 2. จัดเรียงลำดับคะแนนจากมากไปน้อย
-    return scoredResults.sort((a, b) => b.pct - a.pct || b.matchedCount - a.matchedCount);
+    return matched;
   }
 
-  /** จุดเรียกใช้งานหลัก: กรองสุขภาพก่อน แล้วค่อยให้คะแนน */
-  function recommend(menus, { availableIngredients = [], allergenIds = [], ...scoreOptions } = {}) {
-    const safe = filterByHealthConditions(menus, allergenIds);
-    const excluded = menus.length - safe.length;
+  /**
+   * ขั้นตอนที่ 2: การคัดกรองข้อมูล (ความปลอดภัยจากอาการแพ้)
+   * ตัดรายการที่ menu.allergenTags มีค่าตรงกับอาการแพ้ที่เลือกไว้แม้แต่ข้อเดียวออก
+   */
+  function filterByHealthConditions(matchedList, selectedAllergenIds) {
+    if (!selectedAllergenIds || selectedAllergenIds.length === 0) return matchedList.slice();
+    return matchedList.filter((item) => !item.menu.allergenTags.some((tag) => selectedAllergenIds.includes(tag)));
+  }
+
+  /**
+   * ขั้นตอนที่ 3: การคำนวณคะแนนและจัดลำดับ
+   * เรียงตามคะแนนความนิยม (ค่าเฉลี่ยรีวิว 1-5 ดาว) จากมากไปน้อยเป็นหลัก
+   * ถ้าคะแนนความนิยมเท่ากัน (เช่นยังไม่มีรีวิวทั้งคู่) ใช้ % ที่จับคู่วัตถุดิบ
+   * ได้เป็นตัวตัดสินรอง เพื่อให้ลำดับยังสมเหตุสมผลแม้ไม่มีรีวิวช่วยคัด
+   */
+  function rankByPopularity(matchedList) {
+    return matchedList
+      .slice()
+      .sort((a, b) => b.avgRating - a.avgRating || b.pct - a.pct || b.matchedCount - a.matchedCount);
+  }
+
+  /** บวก isFavorite เข้าไปในผลลัพธ์แต่ละแถว (ใช้แสดงป้าย ♥ เมนูโปรด — ไม่มีผลต่อการจัดอันดับ) */
+  function withFavoriteFlag(matchedList, favoriteMenuIds) {
+    if (!favoriteMenuIds || favoriteMenuIds.size === 0) return matchedList;
+    return matchedList.map((item) => ({ ...item, isFavorite: favoriteMenuIds.has(item.menu.id) }));
+  }
+
+  /** จุดเรียกใช้งานหลัก: รันครบทั้ง 3 ขั้นตอนตามลำดับ */
+  function recommend(menus, { availableIngredients = [], allergenIds = [], favoriteMenuIds = new Set() } = {}) {
+    const matched = matchByIngredients(menus, availableIngredients); // 1) จับคู่ข้อมูล
+    const safe = filterByHealthConditions(matched, allergenIds); // 2) คัดกรองความปลอดภัย
+    const ranked = rankByPopularity(safe); // 3) คำนวณคะแนนและจัดลำดับ
+    const results = withFavoriteFlag(ranked, favoriteMenuIds);
+
     return {
-      results: scoreMenus(safe, availableIngredients, scoreOptions),
-      excludedCount: excluded,
+      results,
+      excludedCount: matched.length - safe.length,
     };
   }
 
-  return { filterByHealthConditions, scoreMenus, recommend, ingredientMatches };
+  return { ingredientMatches, matchByIngredients, filterByHealthConditions, rankByPopularity, recommend };
 })();

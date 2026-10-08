@@ -502,6 +502,39 @@ function restrictToAscii(inputEl) {
   });
 }
 
+/**
+ * ตรวจรูปแบบอีเมลให้เข้มงวดกว่า type="email" เริ่มต้นของเบราว์เซอร์ (ซึ่งยอมรับ
+ * อะไรก็ได้ที่มี "@" กับตัวอักษรตามหลังแค่ตัวเดียว) — ต้องมีโดเมนที่ประกอบด้วย
+ * ส่วนย่อยคั่นด้วยจุด ลงท้ายด้วยนามสกุล (TLD) ที่เป็นตัวอักษรล้วนอย่างน้อย 2 ตัว
+ * ไม่มีจุด/ขีดติดกันผิดที่ และห้ามขึ้น/ลงท้ายด้วยจุดหรือขีด
+ */
+function isValidEmail(email) {
+  const value = (email || "").trim();
+  if (!value) return false;
+  const re = /^[a-zA-Z0-9][a-zA-Z0-9._%+-]*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+  return re.test(value);
+}
+
+/**
+ * ผูกการตรวจอีเมลแบบเรียลไทม์เข้ากับ input: ขึ้นข้อความเตือนใต้ช่อง (ต้องมี
+ * <small class="field-error"> เป็นพี่น้องอยู่ใน .field เดียวกัน) และตั้ง
+ * setCustomValidity ไว้ด้วย เพื่อให้เบราว์เซอร์กันการ submit ฟอร์มโดยอัตโนมัติ
+ * ถ้ารูปแบบยังไม่ถูกต้อง (ไม่ต้องเขียน logic กันซ้ำเองใน onSubmit)
+ */
+function bindEmailValidation(inputEl) {
+  const errorEl = inputEl.closest(".field")?.querySelector(".field-error");
+  function check() {
+    const value = inputEl.value.trim();
+    const ok = value === "" || isValidEmail(value);
+    inputEl.setCustomValidity(ok ? "" : "กรุณากรอกอีเมลให้ถูกต้อง เช่น name@example.com");
+    if (errorEl) errorEl.classList.toggle("is-visible", !ok);
+    return ok;
+  }
+  inputEl.addEventListener("input", check);
+  inputEl.addEventListener("blur", check);
+  return check;
+}
+
 function mapAuthErrorMessage(message = "") {
   const msg = message.toLowerCase();
   if (msg.includes("already registered") || msg.includes("already exists")) {

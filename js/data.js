@@ -8,6 +8,9 @@
  *   menus(id, name, ingredients jsonb, steps jsonb)
  *   ingredients(name, category)
  *   allergens(id, label, icon, parent_id, keywords text[]) — parent_id ไม่ว่าง = ตัวเลือกย่อย
+ *   menu_rating_stats(menu_id, avg_rating, rating_count) — view สรุปคะแนนเฉลี่ย
+ *     ต่อเมนูจาก favorites.rating ของสมาชิกทุกคน ใช้บวกคะแนนตอนแนะนำเมนู
+ *     (ดู supabase/migration_menu_rating_stats.sql) — ไม่มีก็ไม่พัง แค่ไม่มีผลบวกส่วนนี้
  *
  * ถ้ายังไม่ได้รันสคริปต์ตั้งค่าฐานข้อมูล หรือเชื่อมต่อ Supabase ไม่ได้
  * DataStore.init() จะโยน error ออกมา ให้แต่ละหน้าจับ error นี้แล้วแสดง
@@ -32,10 +35,14 @@ const DataStore = (() => {
     if (menus && ingredients && allergens) return; // โหลดครั้งเดียวพอ
     ensureSupabase();
 
-    const [menuRes, ingredientRes, allergenRes] = await Promise.all([
+    const [menuRes, ingredientRes, allergenRes, ratingRes] = await Promise.all([
       supa.from("menus").select("id, name, ingredients, steps, image_url").order("id"),
       supa.from("ingredients").select("name, category").order("name"),
       supa.from("allergens").select("id, label, icon, keywords, parent_id").order("sort_order"),
+      // คะแนนเฉลี่ย/จำนวนคนให้คะแนนต่อเมนู (ดู supabase/migration_menu_rating_stats.sql) —
+      // เป็น view สาธารณะ ถ้าโปรเจกต์ยังไม่ได้รัน migration นี้จะ error ได้ จึงไม่ throw
+      // ทิ้งทั้งหน้า แค่ข้ามการบวกคะแนนส่วนนี้ไปเฉย ๆ (ไม่กระทบฟีเจอร์อื่น)
+      supa.from("menu_rating_stats").select("menu_id, avg_rating, rating_count"),
     ]);
 
     if (menuRes.error) throw menuRes.error;
@@ -46,16 +53,33 @@ const DataStore = (() => {
       throw new Error("ยังไม่มีข้อมูลเมนูในฐานข้อมูล กรุณารัน supabase/schema.sql และ supabase/seed.sql ก่อน");
     }
 
+    const ratingByMenuId = {};
+    if (!ratingRes.error) {
+      (ratingRes.data || []).forEach((r) => {
+        ratingByMenuId[r.menu_id] = { avgRating: Number(r.avg_rating) || 0, ratingCount: Number(r.rating_count) || 0 };
+      });
+    } else {
+      console.warn(
+        "[data.js] โหลดคะแนนเฉลี่ยเมนูไม่สำเร็จ (ยังไม่ได้รัน supabase/migration_menu_rating_stats.sql?):",
+        ratingRes.error.message
+      );
+    }
+
     allergens = allergenRes.data;
     ingredients = ingredientRes.data;
-    menus = menuRes.data.map((m) => ({
-      id: m.id,
-      name: m.name,
-      ingredients: m.ingredients,
-      steps: m.steps,
-      image_url: m.image_url,
-      allergenTags: tagAllergens(m.ingredients, allergens),
-    }));
+    menus = menuRes.data.map((m) => {
+      const stats = ratingByMenuId[m.id] || { avgRating: 0, ratingCount: 0 };
+      return {
+        id: m.id,
+        name: m.name,
+        ingredients: m.ingredients,
+        steps: m.steps,
+        image_url: m.image_url,
+        allergenTags: tagAllergens(m.ingredients, allergens),
+        avgRating: stats.avgRating,
+        ratingCount: stats.ratingCount,
+      };
+    });
   }
 
   function getMenus() {

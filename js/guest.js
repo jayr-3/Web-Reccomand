@@ -43,8 +43,8 @@
 
     summaryEl.textContent =
       excludedCount > 0
-        ? `พบ ${results.length} เมนูที่ปลอดภัยสำหรับคุณ (คัดออกไปแล้ว ${excludedCount} เมนูเพราะมีสารก่อภูมิแพ้)`
-        : `พบ ${results.length} เมนูที่ตรงกับวัตถุดิบของคุณ`;
+        ? `พบ ${results.length} เมนูที่ปลอดภัยสำหรับคุณ (คัดออกไปแล้ว ${excludedCount} เมนูเพราะมีสารก่อภูมิแพ้) · เรียงตามคะแนนความนิยม`
+        : `พบ ${results.length} เมนูที่ตรงกับวัตถุดิบของคุณ · เรียงตามคะแนนความนิยม`;
 
     listEl.innerHTML = "";
     const defaultImage = "https://placehold.co/150x150?text=No+Image";
@@ -65,6 +65,7 @@
           <div class="result-title">${match.menu.name}</div>
           <div class="result-tags">
             ${match.ready ? '<span class="tag tag-ready">ทำได้ทันที</span>' : `<span class="tag tag-missing">ขาด ${match.totalCount - match.matchedCount} อย่าง</span>`}
+            ${match.ratingCount > 0 ? `<span class="tag">★ ${match.avgRating.toFixed(1)} (${match.ratingCount})</span>` : ""}
             <span class="tag">${match.totalCount} ส่วนผสม</span>
           </div>
         </div>

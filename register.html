@@ -56,6 +56,7 @@
                      pattern="[\x00-\x7F]*" inputmode="email"
                      title="กรุณากรอกเป็นภาษาอังกฤษเท่านั้น" />
               <small>ใช้ตัวอักษรภาษาอังกฤษ ตัวเลข และสัญลักษณ์เท่านั้น</small>
+              <small class="field-error">กรุณากรอกอีเมลให้ถูกต้อง เช่น name@example.com</small>
             </div>
             <div class="field">
               <label for="password">รหัสผ่าน</label>
@@ -117,6 +118,7 @@
       const passwordInput = document.getElementById("password");
       restrictToAscii(emailInput);
       restrictToAscii(passwordInput);
+      bindEmailValidation(emailInput);
 
       const form = document.getElementById("register-form");
       const errorEl = document.getElementById("form-error");
@@ -128,6 +130,7 @@
         errorEl,
         submittingText: "กำลังสร้างบัญชี...",
         onSubmit: async () => {
+          if (!isValidEmail(emailInput.value)) throw new Error("กรุณากรอกอีเมลให้ถูกต้อง เช่น name@example.com");
           // อาการแพ้/โรคประจำตัวเป็นข้อมูลไม่บังคับ ไม่เลือกเลยก็สมัครได้ตามปกติ
           await DB.signUp({
             name: document.getElementById("name").value.trim(),

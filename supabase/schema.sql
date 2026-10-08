@@ -229,6 +229,26 @@ create policy "favorites_delete_own"
   using (auth.uid() = user_id);
 
 -- ---------------------------------------------------------
+-- 5b) menu_rating_stats: คะแนนเฉลี่ย + จำนวนคนให้คะแนนของแต่ละเมนู รวมจาก
+--     favorites.rating ของสมาชิกทุกคน ใช้บวกคะแนนในระบบแนะนำเมนู (ยิ่งเมนู
+--     ไหนคนให้คะแนนดีเยอะ ยิ่งถูกจัดอันดับขึ้นก่อน) และโชว์เป็นดาวในผลลัพธ์
+--     เป็น "view" สรุปข้อมูลระดับเมนู ไม่เปิดเผยว่าใครให้คะแนนอะไร จึงให้
+--     guest/สมาชิกทุกคนอ่านได้ ทั้งที่ตาราง favorites เองยังเป็นข้อมูลส่วนตัว
+--     (RLS "favorites_select_own" ด้านบน) — view ที่สร้างโดยเจ้าของฐานข้อมูล
+--     (ไม่ได้ตั้ง security_invoker) จะ bypass RLS ของตารางต้นทางได้ตามปกติ
+-- ---------------------------------------------------------
+create or replace view public.menu_rating_stats as
+select
+  menu_id,
+  round(avg(rating)::numeric, 2) as avg_rating,
+  count(rating) as rating_count
+from public.favorites
+where rating is not null
+group by menu_id;
+
+grant select on public.menu_rating_stats to anon, authenticated;
+
+-- ---------------------------------------------------------
 -- 6) สิทธิ์แก้ไขข้อมูลกลาง (menus / ingredients / allergens) เฉพาะแอดมิน
 --    ผู้ใช้ทั่วไปอ่านได้อย่างเดียว (ตาม policy _public_read ด้านบน)
 --    "for all" ครอบคลุม insert/update/delete ในคำสั่งเดียว

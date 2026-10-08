@@ -103,6 +103,44 @@ const DB = (() => {
     localStorage.removeItem(LS_SESSION);
   }
 
+  /**
+   * ลืมรหัสผ่าน: ให้ Supabase ส่งอีเมลที่มีลิงก์รีเซ็ตรหัสผ่านไปให้ (ถ้าอีเมลนี้
+   * มีอยู่จริงในระบบ) ลิงก์จะพาไปที่ reset-password.html พร้อม session ชั่วคราว
+   * สำหรับตั้งรหัสผ่านใหม่เท่านั้น — หน้าตอบกลับจะเหมือนกันไม่ว่าจะมีอีเมลนี้ในระบบ
+   * หรือไม่ เพื่อไม่ให้ใครใช้ฟอร์มนี้เช็คได้ว่าอีเมลไหนสมัครสมาชิกไว้บ้าง
+   */
+  async function resetPasswordForEmail(email) {
+    if (isSupabaseConfigured) {
+      ensureSupabase();
+      const redirectTo = new URL("reset-password.html", window.location.href).toString();
+      const { error } = await supa.auth.resetPasswordForEmail(email, { redirectTo });
+      if (error) throw error;
+      return true;
+    }
+    throw new Error("โหมดสาธิต (ยังไม่เชื่อมต่อ Supabase) ไม่รองรับการส่งอีเมลรีเซ็ตรหัสผ่าน");
+  }
+
+  /** อ่าน session ปัจจุบัน — ใช้เช็คว่าลิงก์รีเซ็ตรหัสผ่านยังใช้ได้อยู่ไหมในหน้า reset-password.html */
+  async function getSession() {
+    if (isSupabaseConfigured) {
+      ensureSupabase();
+      const { data } = await supa.auth.getSession();
+      return data.session;
+    }
+    return null;
+  }
+
+  /** ตั้งรหัสผ่านใหม่ — ต้องมี session ที่ได้จากลิงก์รีเซ็ตรหัสผ่าน (หรือ session ปกติ) อยู่แล้ว */
+  async function updatePassword(newPassword) {
+    if (isSupabaseConfigured) {
+      ensureSupabase();
+      const { error } = await supa.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      return true;
+    }
+    throw new Error("โหมดสาธิต (ยังไม่เชื่อมต่อ Supabase) ไม่รองรับการตั้งรหัสผ่านใหม่");
+  }
+
   async function getCurrentUser() {
     if (isSupabaseConfigured) {
       ensureSupabase();
@@ -340,6 +378,9 @@ const DB = (() => {
     signIn,
     signOut,
     getCurrentUser,
+    resetPasswordForEmail,
+    getSession,
+    updatePassword,
     getProfile,
     updateProfile,
     getFavorites,
